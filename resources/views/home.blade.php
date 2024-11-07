@@ -10,11 +10,11 @@
     <style>
         /* Your custom styles */
         .rounded-top-left-1 {
-            border-top-left-radius: 2rem;
+            border-top-left-radius: 10rem;
         }
 
         .rounded-top-right-1 {
-            border-top-right-radius: 2rem;
+            border-top-right-radius: 10rem;
         }
 
         .club-category-bg {
@@ -25,11 +25,6 @@
             background-color: #003572;
         }
 
-        body {
-            background-image: url('/images/background.png');
-            background-size: cover;
-        }
-
         p {
             margin-bottom: 0;
         }
@@ -38,13 +33,13 @@
 
 <body>
 
-    <div class="container-fluid">
-        <div class="px-5 pt-5 col-12 mx-5">
-            <h1 class="display-1 fw-bold">SUNWAY CLUBS AND SOCIETIES</h1>
+    <div class="text-white text-center" style="background-image: url('/images/background.png'); background-size: cover; background-position: center;">
+        <div class="bg-dark bg-opacity-50 d-flex flex-column justify-content-end align-items-start" style="height: 450px;">
+            <h1 class="display-1 fw-bold mb-0 px-5 mx-5">SUNWAY CLUBS AND SOCIETIES</h1>
         </div>
     </div>
 
-    <div class="container-fluid p-0 rounded-top-left-1 text-bg-dark col-12 border-0">
+    <div class="container-fluid p-0 text-bg-dark col-12 border-0">
         <div class="p-5 mx-5">
             <h1 class="fw-bold">About Us</h1>
             <p>Explore, Connect, and Thrive! With over 100 clubs and societies, Sunway offers a vibrant community where
@@ -56,35 +51,45 @@
             <div class="p-5 mx-5">
                 <h1 class="fw-bold">Our Clubs and Societies</h1>
 
-                <!-- Search functionality (for future implementation) -->
-                <div class="row">
-                    <div class="col-5">
-                        <p>Search by keyword</p>
+                <form method="GET" action="{{ route('home') }}">
+                    <div class="row">
+                        <div class="col-5">
+                            <p>Search by keyword</p>
+                        </div>
+                        <div class="col-5">
+                            <p>Search by category</p>
+                        </div>
                     </div>
-                    <div class="col-5">
-                        <p>Search by category</p>
-                    </div>
-                </div>
 
-                <div class="row">
-                    <div class="col-5">
-                        <div class="input-group">
-                            <input type="text" class="form-control form-control-sm" placeholder="Keywords">
+                    <div class="row">
+                        <div class="col-5">
+                            <div class="input-group">
+                                <input type="text" name="keyword" class="form-control form-control-sm"
+                                    placeholder="Keywords" value="{{ request('keyword') }}">
+                            </div>
+                        </div>
+                        <div class="col-5">
+                            <div class="input-group">
+                                <select name="category_name" class="form-select form-select-sm">
+                                    <option value="All categories"
+                                        {{ request('category_name') == 'All categories' ? 'selected' : '' }}>All
+                                        categories</option>
+                                    @foreach ($categories as $category)
+                                        <option value="{{ $category->name }}"
+                                            {{ request('category_name') == $category->name ? 'selected' : '' }}>
+                                            {{ $category->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-2">
+                            <button type="submit"
+                                class="btn btn-sm btn-outline-warning rounded-pill fw-bold">Search</button>
                         </div>
                     </div>
-                    <div class="col-5">
-                        <div class="input-group">
-                            <select class="form-select form-select-sm">
-                                <option selected="selected">All categories</option>
-                                <!-- Additional categories can be added here -->
-                            </select>
-                        </div>
-                    </div>
-                    <div class="col-2">
-                        <button type="button"
-                            class="btn btn-sm btn-outline-warning rounded-pill fw-bold">Search</button>
-                    </div>
-                </div>
+                </form>
+
 
                 <br>
 
