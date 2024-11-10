@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\website;
 
+use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\Club;
 use App\Models\ClubCategory;
@@ -47,7 +48,7 @@ class HomeController extends Controller
                              ->get();
 
         // Pass data to the view
-        return view('home', compact('clubs', 'categories', 'thisMonthEvents', 'futureEvents', 'keyword', 'categoryName'));
+        return view('website.home', compact('clubs', 'categories', 'thisMonthEvents', 'futureEvents', 'keyword', 'categoryName'));
     }
 }
 
