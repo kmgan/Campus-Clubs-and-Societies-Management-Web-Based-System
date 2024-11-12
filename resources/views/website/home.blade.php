@@ -8,7 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
     <style>
-        /* Your custom styles */
+        /* Custom styles */
         .rounded-top-left-1 {
             border-top-left-radius: 10rem;
         }
@@ -33,24 +33,28 @@
 
 <body>
 
-    <div class="text-white text-center" style="background-image: url('/images/background.png'); background-size: cover; background-position: center;">
+    <!-- Hero Section -->
+    <div class="text-white" style="background-image: url('/images/background.png'); background-size: cover; background-position: center;">
         <div class="bg-dark bg-opacity-50 d-flex flex-column justify-content-end align-items-start" style="height: 450px;">
-            <h1 class="display-1 fw-bold mb-0 px-5 mx-5">SUNWAY CLUBS AND SOCIETIES</h1>
+            <h1 class="display-1 fw-bold mb-0 px-5 mx-md-5">SUNWAY CLUBS AND SOCIETIES</h1>
         </div>
     </div>
 
+    <!-- About Us Section -->
     <div class="container-fluid p-0 text-bg-dark col-12 border-0">
-        <div class="p-5 mx-5">
+        <div class="p-5 mx-md-5">
             <h1 class="fw-bold">About Us</h1>
             <p>Explore, Connect, and Thrive! With over 100 clubs and societies, Sunway offers a vibrant community where
                 you can pursue your passions, develop new skills, and make lifelong friends. From tech and arts to
                 sports and culture, there's something for everyone. Join us and be part of the Sunway spirit!</p>
         </div>
 
+        <!-- Clubs and Societies Section -->
         <div class="container-fluid rounded-top-right-1 text-bg-light col-12 border-0 p-0">
-            <div class="p-5 mx-5">
+            <div class="p-5 mx-md-5">
                 <h1 class="fw-bold">Our Clubs and Societies</h1>
 
+                <!-- Search Form -->
                 <form method="GET" action="{{ route('home') }}">
                     <div class="row">
                         <div class="col-5">
@@ -72,8 +76,7 @@
                             <div class="input-group">
                                 <select name="category_name" class="form-select form-select-sm">
                                     <option value="All categories"
-                                        {{ request('category_name') == 'All categories' ? 'selected' : '' }}>All
-                                        categories</option>
+                                        {{ request('category_name') == 'All categories' ? 'selected' : '' }}>All categories</option>
                                     @foreach ($categories as $category)
                                         <option value="{{ $category->name }}"
                                             {{ request('category_name') == $category->name ? 'selected' : '' }}>
@@ -84,32 +87,26 @@
                             </div>
                         </div>
                         <div class="col-2">
-                            <button type="submit"
-                                class="btn btn-sm btn-outline-warning rounded-pill fw-bold">Search</button>
+                            <button type="submit" class="btn btn-sm btn-outline-warning rounded-pill fw-bold">Search</button>
                         </div>
                     </div>
                 </form>
 
-
-                <br>
-
                 <!-- Render Clubs -->
+                <br>
                 @if ($clubs->isEmpty())
                     <p>No clubs found.</p>
                 @else
                     @foreach ($clubs as $category => $categoryClubs)
                         <div class="row">
-                            <p><span
-                                    class="border px-4 py-1 fw-bold club-category-bg rounded-3 nowrap">{{ $category }}</span>
-                            </p>
+                            <p><span class="border px-4 py-1 fw-bold club-category-bg rounded-3 nowrap">{{ $category }}</span></p>
                         </div>
 
                         <div class="row">
                             @foreach ($categoryClubs as $club)
                                 <div class="col-md-4 my-4">
                                     <div class="border p-3 text-center">
-                                        <img src="data:image/jpeg;base64,{{ base64_encode($club->logo) }}"
-                                            alt="{{ $club->name }}" class="img-fluid"
+                                        <img src="data:image/jpeg;base64,{{ base64_encode($club->logo) }}" alt="{{ $club->name }}" class="img-fluid"
                                             style="max-width: 150px; height: 150px; object-fit: contain;">
                                         <div class="fw-bold mt-2">{{ $club->name }} ></div>
                                     </div>
@@ -124,8 +121,9 @@
                 @endif
             </div>
 
+            <!-- Events Section -->
             <div class="container-fluid rounded-top-left-1 dark-blue-bg text-white col-12 border-0 p-0">
-                <div class="p-5 mx-5">
+                <div class="p-5 p-md-5 mx-md-5">
                     <h1 class="fw-bold">Upcoming Events</h1>
 
                     <!-- Events Happening This Month -->
@@ -138,18 +136,14 @@
                                 <div class="col-md-4 mb-4">
                                     <div class="overflow-hidden">
                                         <div class="position-relative">
-                                            <img src="data:image/jpeg;base64,{{ base64_encode($event->poster) }}"
-                                                alt="{{ $event->name }}" class="img-fluid">
-                                            <span
-                                                class="position-absolute top-0 start-0 m-3 badge bg-warning text-dark">{{ \Carbon\Carbon::parse($event->date)->format('D | d M Y') }}</span>
+                                            <img src="data:image/jpeg;base64,{{ base64_encode($event->poster) }}" alt="{{ $event->name }}" class="img-fluid">
+                                            <span class="position-absolute top-0 start-0 m-3 badge bg-warning text-dark">{{ \Carbon\Carbon::parse($event->date)->format('D | d M Y') }}</span>
                                         </div>
                                         <p>{{ $event->club->name }}</p>
                                         <p class="fw-bold">{{ $event->name }} ></p>
                                         <p><small>{{ $event->description }}</small></p>
                                         <p class="fw-bold"><i class="bi bi-geo-alt me-2"></i>{{ $event->location }}</p>
-                                        <p class="fw-bold"><i
-                                                class="bi bi-clock me-2"></i>{{ \Carbon\Carbon::parse($event->start_time)->format('h:iA') }}
-                                            - {{ \Carbon\Carbon::parse($event->end_time)->format('h:iA') }}</p>
+                                        <p class="fw-bold"><i class="bi bi-clock me-2"></i>{{ \Carbon\Carbon::parse($event->start_time)->format('h:iA') }} - {{ \Carbon\Carbon::parse($event->end_time)->format('h:iA') }}</p>
                                     </div>
                                 </div>
                             @endforeach
@@ -166,18 +160,14 @@
                                 <div class="col-md-4 mb-4">
                                     <div class="overflow-hidden">
                                         <div class="position-relative">
-                                            <img src="data:image/jpeg;base64,{{ base64_encode($event->poster) }}"
-                                                alt="{{ $event->name }}" class="img-fluid">
-                                            <span
-                                                class="position-absolute top-0 start-0 m-3 badge bg-warning text-dark">{{ \Carbon\Carbon::parse($event->date)->format('D | d M Y') }}</span>
+                                            <img src="data:image/jpeg;base64,{{ base64_encode($event->poster) }}" alt="{{ $event->name }}" class="img-fluid">
+                                            <span class="position-absolute top-0 start-0 m-3 badge bg-warning text-dark">{{ \Carbon\Carbon::parse($event->date)->format('D | d M Y') }}</span>
                                         </div>
                                         <p>{{ $event->club->name }}</p>
                                         <p class="fw-bold">{{ $event->name }} ></p>
                                         <p><small>{{ $event->description }}</small></p>
                                         <p class="fw-bold"><i class="bi bi-geo-alt me-2"></i>{{ $event->location }}</p>
-                                        <p class="fw-bold"><i
-                                                class="bi bi-clock me-2"></i>{{ \Carbon\Carbon::parse($event->start_time)->format('h:iA') }}
-                                            - {{ \Carbon\Carbon::parse($event->end_time)->format('h:iA') }}</p>
+                                        <p class="fw-bold"><i class="bi bi-clock me-2"></i>{{ \Carbon\Carbon::parse($event->start_time)->format('h:iA') }} - {{ \Carbon\Carbon::parse($event->end_time)->format('h:iA') }}</p>
                                     </div>
                                 </div>
                             @endforeach
@@ -187,6 +177,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Bootstrap JS Bundle with Popper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

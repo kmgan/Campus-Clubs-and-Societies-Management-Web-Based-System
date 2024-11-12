@@ -7,5 +7,8 @@ use Illuminate\Http\Request;
 
 class ClubController extends Controller
 {
-    //
+    public function showClubPage()
+    {
+        return view('webplatform.club');
+    }
 }

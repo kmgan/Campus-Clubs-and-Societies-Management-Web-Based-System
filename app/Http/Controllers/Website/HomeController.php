@@ -13,42 +13,46 @@ class HomeController extends Controller
 {
     public function index(Request $request)
     {
-        // Fetch search and category filter input from the request
-        $keyword = $request->input('keyword');
-        $categoryName = $request->input('category_name'); 
+        // Get clubs with search and category filters
+        $clubs = $this->getFilteredClubs($request->input('keyword'), $request->input('category_name'));
 
-        // Build a query to fetch clubs with optional filtering
+        // Fetch categories for the dropdown
+        $categories = ClubCategory::all();
+
+        // Fetch events for this month and future events
+        [$thisMonthEvents, $futureEvents] = $this->getEvents();
+
+        // Pass data to the view
+        return view('website.home', compact('clubs', 'categories', 'thisMonthEvents', 'futureEvents'));
+    }
+
+    private function getFilteredClubs($keyword, $categoryName)
+    {
         $clubsQuery = Club::query();
 
-        // Apply keyword search if provided
         if ($keyword) {
             $clubsQuery->where('name', 'like', '%' . $keyword . '%');
         }
 
-        // Apply category filter if provided and not 'All categories'
         if ($categoryName && $categoryName !== 'All categories') {
             $clubsQuery->where('category', $categoryName);
         }
 
-        // Fetch clubs grouped by category after applying filters
-        $clubs = $clubsQuery->get()->groupBy('category');
+        return $clubsQuery->get()->groupBy('category');
+    }
 
-        // Fetch all categories for the dropdown
-        $categories = ClubCategory::all();
-
-        // Events logic remains the same
+    private function getEvents()
+    {
         $nextMonth = new DateTime('first day of next month');
         $thisMonthEvents = Event::where('date', '>=', now()->format('Y-m-d'))
-                                ->where('date', '<', $nextMonth->format('Y-m-d'))
-                                ->orderBy('date', 'asc')
-                                ->get();
+            ->where('date', '<', $nextMonth->format('Y-m-d'))
+            ->orderBy('date', 'asc')
+            ->get();
 
         $futureEvents = Event::where('date', '>=', $nextMonth->format('Y-m-d'))
-                             ->orderBy('date', 'asc')
-                             ->get();
+            ->orderBy('date', 'asc')
+            ->get();
 
-        // Pass data to the view
-        return view('website.home', compact('clubs', 'categories', 'thisMonthEvents', 'futureEvents', 'keyword', 'categoryName'));
+        return [$thisMonthEvents, $futureEvents];
     }
 }
-
