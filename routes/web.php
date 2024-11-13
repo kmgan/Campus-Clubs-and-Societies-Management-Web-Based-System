@@ -22,3 +22,13 @@ Route::get('/', function () {
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('/club', [ClubController::class, 'showClubPage'])->name('club.page');
+
+Route::get('/club-members/data', [ClubController::class, 'getClubMembersData'])->name('clubMembers.data');
+
+Route::delete('/club-members/{id}', [ClubController::class, 'deleteMember'])->name('clubMembers.delete');
+
+Route::get('/club-members/{id}', [ClubController::class, 'getMember']);
+
+Route::put('/club-members/{id}', [ClubController::class, 'updateMember']); 
+
+Route::post('/club-members', [ClubController::class, 'addMember'])->name('clubMembers.add');

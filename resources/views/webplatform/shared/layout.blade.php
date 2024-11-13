@@ -5,10 +5,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Dashboard')</title>
+
+    <!-- CSS Libraries -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.1.8/css/dataTables.bootstrap5.min.css" />
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.datatables.net/2.1.8/js/dataTables.js"></script>
+    <script src="https://cdn.datatables.net/2.1.8/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Custom CSS -->
     <style>
-        .navbar {
+        .sidebar {
             background-color: #003572;
         }
 
@@ -29,7 +42,6 @@
             font-weight: 600;
             font-size: 1.4rem;
             padding-left: 1rem;
-            /* Adjust padding to align with toggler icon */
         }
 
         .navbar-expand-md .navbar-nav .nav-link i {
@@ -95,7 +107,7 @@
 
 <body>
     <!-- Fixed Sidebar Navbar for Medium and Larger Screens -->
-    <nav class="navbar navbar-fixed-left ps-3 align-items-start d-none d-md-flex">
+    <nav class="navbar sidebar navbar-fixed-left ps-3 align-items-start d-none d-md-flex">
         <ul class="navbar-nav">
             <!-- Navigation Items -->
             <li class="nav-item">
@@ -120,7 +132,7 @@
     </nav>
 
     <!-- Collapsible Top Navbar for Small Screens -->
-    <nav class="navbar navbar-expand-md d-md-none">
+    <nav class="navbar sidebar navbar-expand-md d-md-none">
         <div class="container">
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mobileNavbar"
                 aria-controls="mobileNavbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -133,7 +145,7 @@
                         <a class="nav-link" href="#"><i class="bi bi-columns-gap"></i>Dashboard</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#"><i class="bi bi-people-fill"></i>Clubs</a>
+                        <a class="nav-link" href="#"><i class="bi bi-people-fill"></i>Members</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#"><i class="bi bi-calendar-event"></i>Events</a>
@@ -157,8 +169,6 @@
         @yield('content')
     </div>
 
-    <!-- Bootstrap JS Bundle with Popper.js -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
