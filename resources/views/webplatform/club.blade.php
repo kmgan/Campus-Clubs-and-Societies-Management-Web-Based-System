@@ -61,7 +61,7 @@
             <div class="col d-flex justify-content-end">
                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addMemberModal">
                     Add Member <i class="bi bi-plus-circle text-white"></i>
-                </button>                
+                </button>
             </div>
         </div>
     </div>
@@ -75,33 +75,39 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="editMemberForm">
+                    <form id="editMemberForm" class="needs-validation" novalidate>
                         <input type="hidden" id="memberId">
                         <div class="mb-3">
-                            <label for="name" class="form-label">Name</label>
-                            <input type="text" class="form-control" id="name" required>
+                            <label for="edit_name" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="edit_name" required>
+                            <div class="invalid-feedback">Please enter a valid name.</div>
                         </div>
                         <div class="mb-3">
-                            <label for="student_id" class="form-label">Student ID</label>
-                            <input type="text" class="form-control" id="student_id" required>
+                            <label for="edit_student_id" class="form-label">Student ID</label>
+                            <input type="text" class="form-control" id="edit_student_id" required>
+                            <div class="invalid-feedback">Please enter a valid student ID.</div>
                         </div>
                         <div class="mb-3">
-                            <label for="sunway_imail" class="form-label">Sunway Imail</label>
-                            <input type="email" class="form-control" id="sunway_imail" required>
+                            <label for="edit_sunway_imail" class="form-label">Sunway Imail</label>
+                            <input type="email" class="form-control" id="edit_sunway_imail" required>
+                            <div class="invalid-feedback">Please enter a valid email format.</div>
                         </div>
                         <div class="mb-3">
-                            <label for="phone" class="form-label">Phone No.</label>
-                            <input type="text" class="form-control" id="phone" required>
+                            <label for="edit_phone" class="form-label">Phone No.</label>
+                            <input type="text" class="form-control" id="edit_phone" required>
+                            <div class="invalid-feedback">Please enter a valid phone number.</div>
                         </div>
                         <div class="mb-3">
-                            <label for="personal_email" class="form-label">Personal Email</label>
-                            <input type="text" class="form-control" id="personal_email">
+                            <label for="edit_personal_email" class="form-label">Personal Email</label>
+                            <input type="email" class="form-control" id="edit_personal_email">
+                            <div class="invalid-feedback">Please enter a valid email format.</div>
                         </div>
                         <div class="mb-3">
-                            <label for="course_of_study" class="form-label">Course of Study</label>
-                            <input type="text" class="form-control" id="course_of_study" required>
+                            <label for="edit_course_of_study" class="form-label">Course of Study</label>
+                            <input type="text" class="form-control" id="edit_course_of_study" required>
+                            <div class="invalid-feedback">Please enter a valid course.</div>
                         </div>
-                        <button type="button" class="btn btn-primary" onclick="saveMember()">Save changes</button>
+                        <button type="submit" class="btn btn-primary">Save changes</button>
                     </form>
                 </div>
             </div>
@@ -117,33 +123,39 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="addMemberForm">
+                    <form id="addMemberForm" class="needs-validation" novalidate>
                         <!-- Member input fields as in the Edit modal -->
                         <div class="mb-3">
                             <label for="add_name" class="form-label">Name</label>
                             <input type="text" class="form-control" id="add_name" required>
+                            <div class="invalid-feedback">Please enter a valid name.</div>
                         </div>
                         <div class="mb-3">
                             <label for="add_student_id" class="form-label">Student ID</label>
                             <input type="text" class="form-control" id="add_student_id" required>
+                            <div class="invalid-feedback">Please enter a valid student ID.</div>
                         </div>
                         <div class="mb-3">
                             <label for="add_sunway_imail" class="form-label">Sunway Imail</label>
                             <input type="email" class="form-control" id="add_sunway_imail" required>
+                            <div class="invalid-feedback">Please enter a valid email format.</div>
                         </div>
                         <div class="mb-3">
                             <label for="add_phone" class="form-label">Phone No.</label>
                             <input type="text" class="form-control" id="add_phone" required>
+                            <div class="invalid-feedback">Please enter a valid phone number.</div>
                         </div>
                         <div class="mb-3">
                             <label for="add_personal_email" class="form-label">Personal Email</label>
-                            <input type="text" class="form-control" id="add_personal_email">
+                            <input type="email" class="form-control" id="add_personal_email">
+                            <div class="invalid-feedback">Please enter a valid email format.</div>
                         </div>
                         <div class="mb-3">
                             <label for="add_course_of_study" class="form-label">Course of Study</label>
                             <input type="text" class="form-control" id="add_course_of_study" required>
+                            <div class="invalid-feedback">Please enter a valid course.</div>
                         </div>
-                        <button type="button" class="btn btn-primary" onclick="addMember()">Add Member</button>
+                        <button type="submit" class="btn btn-primary">Add Member</button>
                     </form>
                 </div>
             </div>
@@ -190,7 +202,14 @@
                     },
                     {
                         "data": "created_at",
-                        "visible": false
+                        "visible": false,
+                        "render": function(data, type, row) {
+                            if (data) {
+                                return moment(data).format(
+                                    'DD/MM/YYYY');
+                            }
+                            return '';
+                        }
                     }
                 ],
                 "order": [
@@ -222,7 +241,10 @@
 
         // Format function for row details
         function format(d) {
-            // 'd' is the row's data object
+            // Use Moment.js to format the created_at field
+            const formattedDate = d.created_at ? moment(d.created_at).format('DD/MM/YYYY') : '';
+
+            // Return HTML with formatted date
             return `<table class="table">
             <tr>
                 <td>Personal Email:</td>
@@ -234,7 +256,7 @@
             </tr>
             <tr>
                 <td>Date Joined:</td>
-                <td>${d.created_at}</td>
+                <td>${formattedDate}</td>
             </tr>
         </table>`;
         }
@@ -284,6 +306,36 @@
             });
         }
 
+        (() => {
+            'use strict';
+            // Enforces strict mode, which helps catch common coding mistakes and prevents unsafe actions like defining global variables.
+
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            const forms = document.querySelectorAll('.needs-validation');
+            // Selects all form elements with the `needs-validation` class and stores them in the `forms` NodeList.
+
+            // Loop over them and prevent submission
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event
+                            .preventDefault(); // Prevents the form from being submitted if validation fails.
+                        event
+                            .stopPropagation(); // Stops the event from bubbling up further, ensuring no other handlers are triggered.
+                    }
+
+                    form.classList.add('was-validated');
+                    // Adds the `was-validated` class to the form, triggering Bootstrap’s custom styles for validation feedback.
+                }, false);
+            });
+        })();
+
+        $('#addMemberModal, #editMemberModal').on('hidden.bs.modal', function() {
+            $(this).find('form')[0].reset(); // Resets the form fields
+            $(this).find('form').removeClass('was-validated'); // Removes validation styles
+        });
+
+
         function editMember(memberId) {
             // Fetch member data via AJAX
             $.ajax({
@@ -292,12 +344,12 @@
                 success: function(data) {
                     // Populate modal fields with member data
                     $('#memberId').val(data.id);
-                    $('#name').val(data.name);
-                    $('#student_id').val(data.student_id);
-                    $('#sunway_imail').val(data.sunway_imail);
-                    $('#phone').val(data.phone);
-                    $('#personal_email').val(data.personal_email)
-                    $('#course_of_study').val(data.course_of_study);
+                    $('#edit_name').val(data.name); // Corrected to match ID
+                    $('#edit_student_id').val(data.student_id); // Corrected to match ID
+                    $('#edit_sunway_imail').val(data.sunway_imail); // Corrected to match ID
+                    $('#edit_phone').val(data.phone); // Corrected to match ID
+                    $('#edit_personal_email').val(data.personal_email); // Corrected to match ID
+                    $('#edit_course_of_study').val(data.course_of_study); // Corrected to match ID
 
                     // Open the modal
                     $('#editMemberModal').modal('show');
@@ -312,6 +364,16 @@
                 }
             });
         }
+
+        document.getElementById('editMemberForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            if (this.checkValidity()) {
+                saveMember(); // Only call saveMember if form is valid
+            }
+
+            this.classList.add('was-validated'); // Show validation feedback
+        });
 
         function saveMember() {
             const memberId = $('#memberId').val();
@@ -354,6 +416,17 @@
                 }
             });
         }
+
+        document.getElementById('addMemberForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            if (this.checkValidity()) {
+                addMember(); // Only call addMember if the form is valid
+            }
+
+            this.classList.add('was-validated'); // Show validation feedback
+        });
+
 
         function addMember() {
             $.ajax({
