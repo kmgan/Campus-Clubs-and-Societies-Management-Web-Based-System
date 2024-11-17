@@ -1,16 +1,16 @@
 <?php
 
-namespace App\Http\Controllers\webplatform;
+namespace App\Http\Controllers\WebPlatform;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\ClubMember;
 
-class ClubController extends Controller
+class ClubMemberController extends Controller
 {
-    public function showClubPage()
+    public function showMemberPage()
     {
-        return view('webplatform.club');
+        return view('webplatform.member');
     }
 
     public function getClubMembersData()

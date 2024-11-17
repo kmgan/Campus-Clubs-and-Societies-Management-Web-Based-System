@@ -2,33 +2,26 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Website\HomeController;
-use App\Http\Controllers\WebPlatform\ClubController;
-
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
-*/
-
-Route::get('/', function () {
-    return view('welcome');
-});
+use App\Http\Controllers\WebPlatform\ClubMemberController;
+use App\Http\Controllers\WebPlatform\Auth\LoginController;
+use Illuminate\Support\Facades\Auth;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
-Route::get('/club', [ClubController::class, 'showClubPage'])->name('club.page');
+// Authentication Routes
+Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
+Route::post('login', [LoginController::class, 'login']);
+Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 
-Route::get('/club-members/data', [ClubController::class, 'getClubMembersData'])->name('clubMembers.data');
+// Routes requiring authentication
+Route::middleware(['auth'])->group(function () {
+    Route::get('/member', [ClubMemberController::class, 'showMemberPage'])->name('club.page');
+    Route::get('/club-members/data', [ClubMemberController::class, 'getClubMembersData'])->name('clubMembers.data');
+    Route::delete('/club-members/{id}', [ClubMemberController::class, 'deleteMember'])->name('clubMembers.delete');
+    Route::get('/club-members/{id}', [ClubMemberController::class, 'getMember']);
+    Route::put('/club-members/{id}', [ClubMemberController::class, 'updateMember']);
+    Route::post('/club-members', [ClubMemberController::class, 'addMember'])->name('clubMembers.add');
+});
 
-Route::delete('/club-members/{id}', [ClubController::class, 'deleteMember'])->name('clubMembers.delete');
+Route::get('/home', [HomeController::class, 'index'])->name('home');
 
-Route::get('/club-members/{id}', [ClubController::class, 'getMember']);
-
-Route::put('/club-members/{id}', [ClubController::class, 'updateMember']); 
-
-Route::post('/club-members', [ClubController::class, 'addMember'])->name('clubMembers.add');

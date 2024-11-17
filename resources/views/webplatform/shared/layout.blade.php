@@ -24,6 +24,7 @@
     <style>
         .sidebar {
             background-color: #003572;
+            justify-content: start;
         }
 
         /* Sidebar Styles */
@@ -69,6 +70,27 @@
             text-decoration: underline;
         }
 
+        /* Styling for the navbar brand to make it stand out */
+        .custom-brand {
+            font-size: 2.5rem;
+            /* Larger font size for emphasis */
+            font-weight: bold;
+            /* Make the brand bold */
+            color: #ffffff;
+            /* White color for contrast against the dark background */
+            padding: 1rem 0;
+            /* Padding to create space around the brand */
+            text-transform: uppercase;
+            /* Make the text uppercase to stand out */
+            text-align: center;
+            /* Center-align the brand text for better visual balance */
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .custom-brand:hover {
+            color: white;
+        }
+
         /* Main Content Styles */
         .content {
             margin-left: 12.5rem;
@@ -97,6 +119,10 @@
                 left: 0;
                 right: 0;
             }
+
+            .custom-brand {
+                padding: 0;
+            }
         }
 
         .navbar-toggler:focus {
@@ -108,14 +134,16 @@
 
 <body>
     <!-- Fixed Sidebar Navbar for Medium and Larger Screens -->
-    <nav class="navbar sidebar navbar-fixed-left ps-3 align-items-start d-none d-md-flex">
-        <ul class="navbar-nav">
+    <nav class="navbar sidebar navbar-fixed-left ps-3 d-none d-md-flex flex-column">
+        <!-- Navbar Brand -->
+        <a class="navbar-brand custom-brand" href="#">iClub</a>
+        <ul class="navbar-nav flex-column w-100">
             <!-- Navigation Items -->
             <li class="nav-item">
                 <a class="nav-link" href="#"><i class="bi bi-columns-gap"></i>Dashboard</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#"><i class="bi bi-people-fill"></i>Clubs</a>
+                <a class="nav-link" href="#"><i class="bi bi-people-fill"></i>Members</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="#"><i class="bi bi-calendar-event"></i>Events</a>
@@ -127,18 +155,26 @@
                 <a class="nav-link" href="#"><i class="bi bi-question-circle"></i>Help</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#"><i class="bi bi-box-arrow-right"></i>Sign Out</a>
+                <a class="nav-link" href="{{ route('logout') }}"
+                   onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                   <i class="bi bi-box-arrow-right"></i>Sign Out
+                </a>
             </li>
         </ul>
     </nav>
 
     <!-- Collapsible Top Navbar for Small Screens -->
     <nav class="navbar sidebar navbar-expand-md d-md-none">
-        <div class="container">
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mobileNavbar"
-                aria-controls="mobileNavbar" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+        <div class="container-fluid">
+            <div class="d-flex justify-content-start w-100">
+                <!-- Navbar Toggle Button on the left -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mobileNavbar"
+                    aria-controls="mobileNavbar" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <!-- Centered Navbar Brand -->
+                <a class="navbar-brand custom-brand ms-1" href="#">iClub</a>
+            </div>
             <div class="collapse navbar-collapse" id="mobileNavbar">
                 <ul class="navbar-nav">
                     <!-- Navigation Items (same as sidebar) -->
@@ -158,12 +194,19 @@
                         <a class="nav-link" href="#"><i class="bi bi-question-circle"></i>Help</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#"><i class="bi bi-box-arrow-right"></i>Sign Out</a>
+                        <a class="nav-link" href="{{ route('logout') }}"
+                           onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                           <i class="bi bi-box-arrow-right"></i>Sign Out
+                        </a>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
+
+    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+        @csrf
+    </form>
 
     <!-- Main Content Area -->
     <div class="content">

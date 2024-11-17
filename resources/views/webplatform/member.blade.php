@@ -1,6 +1,6 @@
 @extends('webplatform.shared.layout')
 
-@section('title', 'Clubs')
+@section('title', 'Member')
 
 @section('content')
     <style>

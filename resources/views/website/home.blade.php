@@ -32,8 +32,6 @@
 </head>
 
 <body>
-
-    <!-- Hero Section -->
     <div class="text-white" style="background-image: url('/images/background.png'); background-size: cover; background-position: center;">
         <div class="bg-dark bg-opacity-50 d-flex flex-column justify-content-end align-items-start" style="height: 450px;">
             <h1 class="display-1 fw-bold mb-0 px-5 mx-md-5">SUNWAY CLUBS AND SOCIETIES</h1>
