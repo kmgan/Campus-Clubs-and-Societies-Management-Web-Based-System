@@ -70,6 +70,27 @@
             text-decoration: underline;
         }
 
+        .navbar-nav .nav-item .nav-link.active {
+            position: relative;
+            color: #ffffff;
+            /* Active link text color */
+        }
+
+        .navbar-nav .nav-item .nav-link.active::before {
+            content: '';
+            position: absolute;
+            left: -10px;
+            /* Adjust this value based on your design */
+            top: 0;
+            bottom: 0;
+            width: 5px;
+            /* Width of the white rectangle */
+            background-color: #ffffff;
+            /* Color of the rectangle */
+            border-radius: 0 4px 4px 0;
+            /* Rounded corners to make it look good */
+        }
+
         /* Styling for the navbar brand to make it stand out */
         .custom-brand {
             font-size: 2.5rem;
@@ -123,6 +144,11 @@
             .custom-brand {
                 padding: 0;
             }
+
+            .modal{
+                height: 100%;
+                width: 100%;
+            }
         }
 
         .navbar-toggler:focus {
@@ -143,10 +169,20 @@
                 <a class="nav-link" href="#"><i class="bi bi-columns-gap"></i>Dashboard</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#"><i class="bi bi-people-fill"></i>Members</a>
+                @role('club_manager')
+                    <a class="nav-link {{ request()->routeIs('club.page') ? 'active' : '' }}"
+                        href="{{ route('club.page') }}"><i class="bi bi-people-fill"></i>Members</a>
+                @endrole
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#"><i class="bi bi-calendar-event"></i>Events</a>
+                @role('admin')
+                    <a class="nav-link {{ request()->routeIs('user.page') ? 'active' : '' }}"
+                        href="{{ route('user.page') }}"><i class="bi bi-people-fill"></i>Users</a>
+                @endrole
+            </li>              
+            <li class="nav-item">
+                <a class="nav-link {{ request()->routeIs('event.page') ? 'active' : '' }}"
+                    href="{{ route('event.page') }}"><i class="bi bi-calendar-event"></i>Events</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="#"><i class="bi bi-chat-left-text"></i>Messages</a>
@@ -156,8 +192,8 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="{{ route('logout') }}"
-                   onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                   <i class="bi bi-box-arrow-right"></i>Sign Out
+                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                    <i class="bi bi-box-arrow-right"></i>Sign Out
                 </a>
             </li>
         </ul>
@@ -182,10 +218,20 @@
                         <a class="nav-link" href="#"><i class="bi bi-columns-gap"></i>Dashboard</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#"><i class="bi bi-people-fill"></i>Members</a>
-                    </li>
+                        @role('club_manager')
+                            <a class="nav-link {{ request()->routeIs('club.page') ? 'active' : '' }}"
+                                href="{{ route('club.page') }}"><i class="bi bi-people-fill"></i>Members</a>
+                        @endrole
+                    </li> 
                     <li class="nav-item">
-                        <a class="nav-link" href="#"><i class="bi bi-calendar-event"></i>Events</a>
+                        @role('admin')
+                            <a class="nav-link {{ request()->routeIs('user.page') ? 'active' : '' }}"
+                                href="{{ route('user.page') }}"><i class="bi bi-people-fill"></i>Users</a>
+                        @endrole
+                    </li>                       
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('event.page') ? 'active' : '' }}"
+                            href="{{ route('event.page') }}"><i class="bi bi-calendar-event"></i>Events</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#"><i class="bi bi-chat-left-text"></i>Messages</a>
@@ -195,14 +241,15 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('logout') }}"
-                           onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                           <i class="bi bi-box-arrow-right"></i>Sign Out
+                            onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                            <i class="bi bi-box-arrow-right"></i>Sign Out
                         </a>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
+
 
     <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
         @csrf

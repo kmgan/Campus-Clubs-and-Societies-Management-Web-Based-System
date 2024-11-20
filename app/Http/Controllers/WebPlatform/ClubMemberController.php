@@ -5,6 +5,7 @@ namespace App\Http\Controllers\WebPlatform;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\ClubMember;
+use Illuminate\Support\Facades\Auth;
 
 class ClubMemberController extends Controller
 {
@@ -15,20 +16,41 @@ class ClubMemberController extends Controller
 
     public function getClubMembersData()
     {
-        // Fetch all members with their club names
-        $members = ClubMember::select([
-            'club_member.id',
-            'club_member.name',
-            'club_member.student_id',
-            'club_member.sunway_imail',
-            'club_member.personal_email',
-            'club_member.phone',
-            'club_member.course_of_study',
-            'club_member.created_at',
-            'club.name as club_name'  // Getting the club name via join
-        ])
-            ->join('club', 'club_member.club_id', '=', 'club.id') // Use singular table names
-            ->get();
+        /** @var \App\Models\User */
+        $user = Auth::user(); 
+
+        if ($user->hasRole('club_manager')) {
+            // Fetch only members that belong to the manager's club
+            $members = ClubMember::select([
+                'club_member.id',
+                'club_member.name',
+                'club_member.student_id',
+                'club_member.sunway_imail',
+                'club_member.personal_email',
+                'club_member.phone',
+                'club_member.course_of_study',
+                'club_member.created_at',
+                'club.name as club_name'  // Getting the club name via join
+            ])
+                ->join('club', 'club_member.club_id', '=', 'club.id') // Joining with club table
+                ->where('club_member.club_id', $user->club_id) // Filter by logged-in user's club_id
+                ->get();
+        } else {
+            // If the user is not a club manager, they can view all members (you can customize this as needed)
+            $members = ClubMember::select([
+                'club_member.id',
+                'club_member.name',
+                'club_member.student_id',
+                'club_member.sunway_imail',
+                'club_member.personal_email',
+                'club_member.phone',
+                'club_member.course_of_study',
+                'club_member.created_at',
+                'club.name as club_name'
+            ])
+                ->join('club', 'club_member.club_id', '=', 'club.id')
+                ->get();
+        }
 
         // Return data as JSON
         return response()->json(['data' => $members]);
@@ -85,6 +107,7 @@ class ClubMemberController extends Controller
         $member->phone = $request->phone;
         $member->personal_email = $request->personal_email;
         $member->course_of_study = $request->course_of_study;
+        $member->club_id = Auth::user()->club_id; // Assign club_id to the logged-in user's club
         $member->save();
 
         return response()->json(['message' => 'Member added successfully']);

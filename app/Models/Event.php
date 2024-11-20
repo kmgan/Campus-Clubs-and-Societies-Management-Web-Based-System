@@ -11,13 +11,13 @@ class Event extends Model
 
     // The attributes that are mass assignable
     protected $fillable = [
-        'name', 
-        'poster', 
-        'description', 
-        'location', 
-        'date', 
-        'start_time', 
-        'end_time', 
+        'name',
+        'poster',
+        'description',
+        'location',
+        'date',
+        'start_time',
+        'end_time',
         'club_id'
     ];
 
@@ -33,6 +33,9 @@ class Event extends Model
     {
         return $this->belongsTo(Club::class);
     }
+
+    public function participant()
+    {
+        return $this->belongsToMany(User::class, 'event_participant');
+    }
 }
-
-

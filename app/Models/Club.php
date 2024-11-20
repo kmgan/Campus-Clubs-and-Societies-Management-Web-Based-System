@@ -21,5 +21,15 @@ class Club extends Model
     {
         return $this->hasMany(Event::class);
     }
+
+    public function manager() {
+        return $this->hasOne(User::class)->where('role', 'club_manager');
+    }    
+
+    public function members() {
+        return $this->hasMany(ClubMember::class);
+    }
+    
+    
 }
 
