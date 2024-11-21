@@ -16,7 +16,7 @@ class LoginController extends Controller
      *
      * @var string
      */
-    protected $redirectTo = '/dashboard';
+    protected $redirectTo = '/iclub/dashboard';
 
     /**
      * Create a new controller instance.
@@ -36,6 +36,10 @@ class LoginController extends Controller
      */
     public function showLoginForm()
     {
+        if (auth()->check()) {
+            return redirect()->route('iclub.dashboard.page');
+        }
+        
         return view('webplatform.auth.login');
     }
 
@@ -53,7 +57,7 @@ class LoginController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/dashboard');
+        return redirect('/login');
     }
 
     /**

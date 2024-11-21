@@ -23,7 +23,7 @@
     <hr>
 
     <div class="container-fluid">
-        <form action="{{ route('event.page') }}" method="GET">
+        <form action="{{ route('iclub.event.page') }}" method="GET">
             <div class="row g-3">
                 <div class="col-md-4 col-12">
                     <div class="input-group">

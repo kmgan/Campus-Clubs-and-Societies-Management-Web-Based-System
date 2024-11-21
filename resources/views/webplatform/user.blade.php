@@ -151,7 +151,7 @@
             let table = $('#usersTable').DataTable({
                 "processing": true,
                 "responsive": true,
-                "ajax": "{{ route('users.data') }}",
+                "ajax": "{{ route('iclub.users.data') }}",
                 "columns": [{
                         "data": "name"
                     },
@@ -161,7 +161,16 @@
                     {
                         "data": "role",
                         "render": function(data) {
-                            return data ? data : 'No Role Assigned';
+                            switch (data) {
+                                case 'admin':
+                                    return 'Admin';
+                                case 'club_manager':
+                                    return 'Club Manager';
+                                case 'user':
+                                    return 'User';
+                                default:
+                                    return 'No Role Assigned';
+                            }
                         }
                     },
                     {
@@ -212,7 +221,7 @@
         function populateRolesAndClubs() {
             // Populate roles dynamically
             $.ajax({
-                url: '/role/data',
+                url: '/iclub/role/data',
                 type: 'GET',
                 success: function(rolesData) {
                     const addRoleSelect = $('#add_role');
@@ -238,7 +247,7 @@
 
             // Populate clubs dynamically
             $.ajax({
-                url: '/club/data',
+                url: '/iclub/club/data',
                 type: 'GET',
                 success: function(clubsData) {
                     const addClubSelect = $('#add_club_id');
@@ -282,7 +291,7 @@
 
         function editUser(userId) {
             $.ajax({
-                url: `/user/${userId}`,
+                url: `/iclub/user/${userId}`,
                 type: 'GET',
                 success: function(data) {
                     $('#userId').val(data.id);
@@ -318,7 +327,7 @@
             const userId = $('#userId').val();
 
             $.ajax({
-                url: `/user/${userId}`,
+                url: `/iclub/user/${userId}`,
                 type: 'PUT',
                 data: {
                     _token: '{{ csrf_token() }}',
@@ -359,7 +368,7 @@
 
         function addUser() {
             $.ajax({
-                url: "{{ route('users.add') }}",
+                url: "{{ route('iclub.users.add') }}",
                 type: 'POST',
                 data: {
                     _token: '{{ csrf_token() }}',
@@ -401,7 +410,7 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
-                        url: `/user/${userId}`,
+                        url: `/iclub/user/${userId}`,
                         type: 'DELETE',
                         headers: {
                             'X-CSRF-TOKEN': '{{ csrf_token() }}'

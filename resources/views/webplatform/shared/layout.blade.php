@@ -145,7 +145,7 @@
                 padding: 0;
             }
 
-            .modal{
+            .modal {
                 height: 100%;
                 width: 100%;
             }
@@ -169,20 +169,20 @@
                 <a class="nav-link" href="#"><i class="bi bi-columns-gap"></i>Dashboard</a>
             </li>
             <li class="nav-item">
-                @role('club_manager')
-                    <a class="nav-link {{ request()->routeIs('club.page') ? 'active' : '' }}"
-                        href="{{ route('club.page') }}"><i class="bi bi-people-fill"></i>Members</a>
+                @hasrole('club_manager')
+                    <a class="nav-link {{ request()->routeIs('iclub.club.page') ? 'active' : '' }}"
+                        href="{{ route('iclub.club.page') }}"><i class="bi bi-people-fill"></i>Members</a>
                 @endrole
             </li>
             <li class="nav-item">
-                @role('admin')
-                    <a class="nav-link {{ request()->routeIs('user.page') ? 'active' : '' }}"
-                        href="{{ route('user.page') }}"><i class="bi bi-people-fill"></i>Users</a>
+                @hasrole('admin')
+                    <a class="nav-link {{ request()->routeIs('iclub.user.page') ? 'active' : '' }}"
+                        href="{{ route('iclub.user.page') }}"><i class="bi bi-people-fill"></i>Users</a>
                 @endrole
-            </li>              
+            </li>
             <li class="nav-item">
-                <a class="nav-link {{ request()->routeIs('event.page') ? 'active' : '' }}"
-                    href="{{ route('event.page') }}"><i class="bi bi-calendar-event"></i>Events</a>
+                <a class="nav-link {{ request()->routeIs('iclub.event.page') ? 'active' : '' }}"
+                    href="{{ route('iclub.event.page') }}"><i class="bi bi-calendar-event"></i>Events</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="#"><i class="bi bi-chat-left-text"></i>Messages</a>
@@ -219,19 +219,19 @@
                     </li>
                     <li class="nav-item">
                         @role('club_manager')
-                            <a class="nav-link {{ request()->routeIs('club.page') ? 'active' : '' }}"
-                                href="{{ route('club.page') }}"><i class="bi bi-people-fill"></i>Members</a>
+                            <a class="nav-link {{ request()->routeIs('iclub.club.page') ? 'active' : '' }}"
+                                href="{{ route('iclub.club.page') }}"><i class="bi bi-people-fill"></i>Members</a>
                         @endrole
-                    </li> 
+                    </li>
                     <li class="nav-item">
                         @role('admin')
-                            <a class="nav-link {{ request()->routeIs('user.page') ? 'active' : '' }}"
-                                href="{{ route('user.page') }}"><i class="bi bi-people-fill"></i>Users</a>
+                            <a class="nav-link {{ request()->routeIs('iclub.user.page') ? 'active' : '' }}"
+                                href="{{ route('iclub.user.page') }}"><i class="bi bi-people-fill"></i>Users</a>
                         @endrole
-                    </li>                       
+                    </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('event.page') ? 'active' : '' }}"
-                            href="{{ route('event.page') }}"><i class="bi bi-calendar-event"></i>Events</a>
+                        <a class="nav-link {{ request()->routeIs('iclub.event.page') ? 'active' : '' }}"
+                            href="{{ route('iclub.event.page') }}"><i class="bi bi-calendar-event"></i>Events</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="#"><i class="bi bi-chat-left-text"></i>Messages</a>

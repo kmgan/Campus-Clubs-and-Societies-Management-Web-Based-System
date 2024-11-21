@@ -169,7 +169,7 @@
             let table = $('#memberTable').DataTable({
                 "processing": true,
                 "responsive": true,
-                "ajax": "{{ route('clubMembers.data') }}",
+                "ajax": "{{ route('iclub.clubMembers.data') }}",
                 "columns": [{
                         "className": 'dt-control',
                         "orderable": false,
@@ -274,7 +274,7 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
-                        url: `/club-members/${memberId}`,
+                        url: `/iclub/club-members/${memberId}`,
                         type: 'DELETE',
                         headers: {
                             'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -339,7 +339,7 @@
         function editMember(memberId) {
             // Fetch member data via AJAX
             $.ajax({
-                url: `/club-members/${memberId}`,
+                url: `/iclub/club-members/${memberId}`,
                 type: 'GET',
                 success: function(data) {
                     // Populate modal fields with member data
@@ -380,7 +380,7 @@
 
             // Send the updated data via AJAX
             $.ajax({
-                url: `/club-members/${memberId}`,
+                url: `/iclub/club-members/${memberId}`,
                 type: 'PUT',
                 data: {
                     _token: '{{ csrf_token() }}',
@@ -430,7 +430,7 @@
 
         function addMember() {
             $.ajax({
-                url: "{{ route('clubMembers.add') }}",
+                url: "{{ route('iclub.clubMembers.add') }}",
                 type: 'POST',
                 data: {
                     _token: '{{ csrf_token() }}',

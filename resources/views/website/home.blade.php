@@ -7,6 +7,7 @@
     <title>Sunway Clubs and Societies</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <link href='https://fonts.googleapis.com/css?family=Inter' rel='stylesheet'>
     <style>
         /* Custom styles */
         .rounded-top-left-1 {
@@ -28,18 +29,71 @@
         p {
             margin-bottom: 0;
         }
+
+        .fs-4 {
+            font-family: "Inter" !important;
+        }
+
+        .nav-link {
+            color: black !important;
+            transition: color 0.2s ease-in-out;
+            /* Smooth color transition */
+        }
+
+        .nav-link:hover {
+            color: grey !important;
+        }
+
+        html {
+            scroll-padding-top: 83px;
+        }
+
+        @media (max-width: 767.98px) {
+            html {
+                scroll-padding-top: 200px;
+                /* Adjusted for smaller screens like mobile */
+            }
+        }
     </style>
 </head>
 
 <body>
-    <div class="text-white" style="background-image: url('/images/background.png'); background-size: cover; background-position: center;">
-        <div class="bg-dark bg-opacity-50 d-flex flex-column justify-content-end align-items-start" style="height: 450px;">
+    <nav class="navbar navbar-expand-lg sticky-top bg-white">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <img src="/images/sunway-logo-full.png" height= "57px" width= "140px">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarTogglerDemo02" aria-controls="navbarTogglerDemo02" aria-expanded="false"
+                aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarTogglerDemo02">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link fs-5 px-3" href="#about">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fs-5 px-3" href="#clubs">Clubs</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fs-5 px-3" href="#events">Events</a>
+                    </li>
+                </ul>
+                <a href="{{ route('login') }}" target="_blank" class="btn btn-dark btn-lg rounded-pill"><span style="font-style: italic">iClub </span>Log In</a>
+            </div>
+        </div>
+    </nav>
+    <div class="text-white"
+        style="background-image: url('/images/background.png'); background-size: cover; background-position: center;">
+        <div class="bg-dark bg-opacity-50 d-flex flex-column justify-content-end align-items-start"
+            style="height: 450px;">
             <h1 class="display-1 fw-bold mb-0 px-5 mx-md-5">SUNWAY CLUBS AND SOCIETIES</h1>
         </div>
     </div>
 
     <!-- About Us Section -->
-    <div class="container-fluid p-0 text-bg-dark col-12 border-0">
+    <div class="container-fluid p-0 text-bg-dark col-12 border-0" id="about">
         <div class="p-5 mx-md-5">
             <h1 class="fw-bold">About Us</h1>
             <p>Explore, Connect, and Thrive! With over 100 clubs and societies, Sunway offers a vibrant community where
@@ -48,7 +102,7 @@
         </div>
 
         <!-- Clubs and Societies Section -->
-        <div class="container-fluid rounded-top-right-1 text-bg-light col-12 border-0 p-0">
+        <div class="container-fluid rounded-top-right-1 text-bg-light col-12 border-0 p-0" id="clubs">
             <div class="p-5 mx-md-5">
                 <h1 class="fw-bold">Our Clubs and Societies</h1>
 
@@ -74,7 +128,8 @@
                             <div class="input-group">
                                 <select name="category_name" class="form-select form-select-sm">
                                     <option value="All categories"
-                                        {{ request('category_name') == 'All categories' ? 'selected' : '' }}>All categories</option>
+                                        {{ request('category_name') == 'All categories' ? 'selected' : '' }}>All
+                                        categories</option>
                                     @foreach ($categories as $category)
                                         <option value="{{ $category->name }}"
                                             {{ request('category_name') == $category->name ? 'selected' : '' }}>
@@ -85,7 +140,8 @@
                             </div>
                         </div>
                         <div class="col-2">
-                            <button type="submit" class="btn btn-sm btn-outline-warning rounded-pill fw-bold">Search</button>
+                            <button type="submit"
+                                class="btn btn-sm btn-outline-warning rounded-pill fw-bold">Search</button>
                         </div>
                     </div>
                 </form>
@@ -97,14 +153,17 @@
                 @else
                     @foreach ($clubs as $category => $categoryClubs)
                         <div class="row">
-                            <p><span class="border px-4 py-1 fw-bold club-category-bg rounded-3 nowrap">{{ $category }}</span></p>
+                            <p><span
+                                    class="border px-4 py-1 fw-bold club-category-bg rounded-3 nowrap">{{ $category }}</span>
+                            </p>
                         </div>
 
                         <div class="row">
                             @foreach ($categoryClubs as $club)
                                 <div class="col-md-4 my-4">
                                     <div class="border p-3 text-center">
-                                        <img src="data:image/jpeg;base64,{{ base64_encode($club->logo) }}" alt="{{ $club->name }}" class="img-fluid"
+                                        <img src="data:image/jpeg;base64,{{ base64_encode($club->logo) }}"
+                                            alt="{{ $club->name }}" class="img-fluid"
                                             style="max-width: 150px; height: 150px; object-fit: contain;">
                                         <div class="fw-bold mt-2">{{ $club->name }} ></div>
                                     </div>
@@ -120,7 +179,7 @@
             </div>
 
             <!-- Events Section -->
-            <div class="container-fluid rounded-top-left-1 dark-blue-bg text-white col-12 border-0 p-0">
+            <div class="container-fluid rounded-top-left-1 dark-blue-bg text-white col-12 border-0 p-0" id="events">
                 <div class="p-5 p-md-5 mx-md-5">
                     <h1 class="fw-bold">Upcoming Events</h1>
 
@@ -134,14 +193,19 @@
                                 <div class="col-md-4 mb-4">
                                     <div class="overflow-hidden">
                                         <div class="position-relative">
-                                            <img src="data:image/jpeg;base64,{{ base64_encode($event->poster) }}" alt="{{ $event->name }}" class="img-fluid">
-                                            <span class="position-absolute top-0 start-0 m-3 badge bg-warning text-dark">{{ \Carbon\Carbon::parse($event->date)->format('D | d M Y') }}</span>
+                                            <img src="data:image/jpeg;base64,{{ base64_encode($event->poster) }}"
+                                                alt="{{ $event->name }}" class="img-fluid">
+                                            <span
+                                                class="position-absolute top-0 start-0 m-3 badge bg-warning text-dark">{{ \Carbon\Carbon::parse($event->date)->format('D | d M Y') }}</span>
                                         </div>
                                         <p>{{ $event->club->name }}</p>
                                         <p class="fw-bold">{{ $event->name }} ></p>
                                         <p><small>{{ $event->description }}</small></p>
-                                        <p class="fw-bold"><i class="bi bi-geo-alt me-2"></i>{{ $event->location }}</p>
-                                        <p class="fw-bold"><i class="bi bi-clock me-2"></i>{{ \Carbon\Carbon::parse($event->start_time)->format('h:iA') }} - {{ \Carbon\Carbon::parse($event->end_time)->format('h:iA') }}</p>
+                                        <p class="fw-bold"><i class="bi bi-geo-alt me-2"></i>{{ $event->location }}
+                                        </p>
+                                        <p class="fw-bold"><i
+                                                class="bi bi-clock me-2"></i>{{ \Carbon\Carbon::parse($event->start_time)->format('h:iA') }}
+                                            - {{ \Carbon\Carbon::parse($event->end_time)->format('h:iA') }}</p>
                                     </div>
                                 </div>
                             @endforeach
@@ -158,14 +222,19 @@
                                 <div class="col-md-4 mb-4">
                                     <div class="overflow-hidden">
                                         <div class="position-relative">
-                                            <img src="data:image/jpeg;base64,{{ base64_encode($event->poster) }}" alt="{{ $event->name }}" class="img-fluid">
-                                            <span class="position-absolute top-0 start-0 m-3 badge bg-warning text-dark">{{ \Carbon\Carbon::parse($event->date)->format('D | d M Y') }}</span>
+                                            <img src="data:image/jpeg;base64,{{ base64_encode($event->poster) }}"
+                                                alt="{{ $event->name }}" class="img-fluid">
+                                            <span
+                                                class="position-absolute top-0 start-0 m-3 badge bg-warning text-dark">{{ \Carbon\Carbon::parse($event->date)->format('D | d M Y') }}</span>
                                         </div>
                                         <p>{{ $event->club->name }}</p>
                                         <p class="fw-bold">{{ $event->name }} ></p>
                                         <p><small>{{ $event->description }}</small></p>
-                                        <p class="fw-bold"><i class="bi bi-geo-alt me-2"></i>{{ $event->location }}</p>
-                                        <p class="fw-bold"><i class="bi bi-clock me-2"></i>{{ \Carbon\Carbon::parse($event->start_time)->format('h:iA') }} - {{ \Carbon\Carbon::parse($event->end_time)->format('h:iA') }}</p>
+                                        <p class="fw-bold"><i class="bi bi-geo-alt me-2"></i>{{ $event->location }}
+                                        </p>
+                                        <p class="fw-bold"><i
+                                                class="bi bi-clock me-2"></i>{{ \Carbon\Carbon::parse($event->start_time)->format('h:iA') }}
+                                            - {{ \Carbon\Carbon::parse($event->end_time)->format('h:iA') }}</p>
                                     </div>
                                 </div>
                             @endforeach
@@ -176,8 +245,17 @@
         </div>
     </div>
 
-    <!-- Bootstrap JS Bundle with Popper.js -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script> <!-- jQuery Library -->
+    <script>
+        $(document).ready(function() {
+            $('.nav-link').click(function() {
+                if ($('.navbar-toggler').is(':visible')) {
+                    $('#navbarTogglerDemo02').collapse('hide');
+                }
+            });
+        });
+    </script>
 </body>
 
 </html>
