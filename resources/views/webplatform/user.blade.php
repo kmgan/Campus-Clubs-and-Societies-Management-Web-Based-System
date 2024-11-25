@@ -67,7 +67,7 @@
 
     <!-- Add User Modal -->
     <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-fullscreen-sm-down">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="addUserModalLabel">Add User</h5>
@@ -98,7 +98,9 @@
                                 <option value="">No Club</option>
                             </select>
                         </div>
-                        <button type="submit" class="btn btn-primary">Add User</button>
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary">Add</button>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -107,7 +109,7 @@
 
     <!-- Edit User Modal -->
     <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-fullscreen-sm-down">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="editUserModalLabel">Edit User</h5>
@@ -139,7 +141,9 @@
                                 <option value="">No Club</option>
                             </select>
                         </div>
-                        <button type="submit" class="btn btn-primary">Save changes</button>
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
                     </form>
                 </div>
             </div>

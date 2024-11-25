@@ -19,6 +19,7 @@
     <script src="https://cdn.datatables.net/2.1.8/js/dataTables.bootstrap5.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
+    <script src="/js/tinymce.min.js"></script>
 
     <!-- Custom CSS -->
     <style>
@@ -170,8 +171,8 @@
             </li>
             <li class="nav-item">
                 @hasrole('club_manager')
-                    <a class="nav-link {{ request()->routeIs('iclub.club.page') ? 'active' : '' }}"
-                        href="{{ route('iclub.club.page') }}"><i class="bi bi-people-fill"></i>Members</a>
+                    <a class="nav-link {{ request()->routeIs('iclub.clubMember.page') ? 'active' : '' }}"
+                        href="{{ route('iclub.clubMember.page') }}"><i class="bi bi-people-fill"></i>Members</a>
                 @endrole
             </li>
             <li class="nav-item">
@@ -219,8 +220,8 @@
                     </li>
                     <li class="nav-item">
                         @role('club_manager')
-                            <a class="nav-link {{ request()->routeIs('iclub.club.page') ? 'active' : '' }}"
-                                href="{{ route('iclub.club.page') }}"><i class="bi bi-people-fill"></i>Members</a>
+                            <a class="nav-link {{ request()->routeIs('iclub.clubMember.page') ? 'active' : '' }}"
+                                href="{{ route('iclub.clubMember.page') }}"><i class="bi bi-people-fill"></i>Members</a>
                         @endrole
                     </li>
                     <li class="nav-item">

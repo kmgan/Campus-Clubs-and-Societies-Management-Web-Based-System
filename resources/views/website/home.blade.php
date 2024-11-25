@@ -48,11 +48,23 @@
             scroll-padding-top: 83px;
         }
 
+        .event-image{
+            width: 100%;
+            height: 250px;
+        }
+
         @media (max-width: 767.98px) {
             html {
                 scroll-padding-top: 200px;
                 /* Adjusted for smaller screens like mobile */
             }
+        }
+
+        a {
+            color: inherit;
+            /* Inherit the color from the parent element */
+            text-decoration: none;
+            /* Remove default underline */
         }
     </style>
 </head>
@@ -80,7 +92,8 @@
                         <a class="nav-link fs-5 px-3" href="#events">Events</a>
                     </li>
                 </ul>
-                <a href="{{ route('login') }}" target="_blank" class="btn btn-dark btn-lg rounded-pill"><span style="font-style: italic">iClub </span>Log In</a>
+                <a href="{{ route('login') }}" target="_blank" class="btn btn-dark btn-lg rounded-pill"><span
+                        style="font-style: italic">iClub </span>Log In</a>
             </div>
         </div>
     </nav>
@@ -160,7 +173,7 @@
 
                         <div class="row">
                             @foreach ($categoryClubs as $club)
-                                <div class="col-md-4 my-4">
+                                <div class="col-md-3 my-4">
                                     <div class="border p-3 text-center">
                                         <img src="data:image/jpeg;base64,{{ base64_encode($club->logo) }}"
                                             alt="{{ $club->name }}" class="img-fluid"
@@ -190,17 +203,21 @@
                     @else
                         <div class="row">
                             @foreach ($thisMonthEvents as $event)
-                                <div class="col-md-4 mb-4">
+                                <div class="col-md-3 mb-4">
                                     <div class="overflow-hidden">
                                         <div class="position-relative">
-                                            <img src="data:image/jpeg;base64,{{ base64_encode($event->poster) }}"
-                                                alt="{{ $event->name }}" class="img-fluid">
-                                            <span
-                                                class="position-absolute top-0 start-0 m-3 badge bg-warning text-dark">{{ \Carbon\Carbon::parse($event->date)->format('D | d M Y') }}</span>
+                                            <a href="{{ route('event.details', ['id' => $event->id]) }}">
+                                                <img src="data:image/jpeg;base64,{{ base64_encode($event->poster) }}"
+                                                    alt="{{ $event->name }}" class="event-img">
+                                                <span
+                                                    class="position-absolute top-0 start-0 m-3 badge bg-warning text-dark">{{ \Carbon\Carbon::parse($event->date)->format('D | d M Y') }}</span>
+                                            </a>
                                         </div>
-                                        <p>{{ $event->club->name }}</p>
+                                        <p class="fw-bold"><a
+                                                href="{{ route('event.details', ['id' => $event->id]) }}">{{ $event->name }}
+                                                ></a></p>
                                         <p class="fw-bold">{{ $event->name }} ></p>
-                                        <p><small>{{ $event->description }}</small></p>
+                                        <p><small>{!! \Illuminate\Support\Str::limit($event->description, 100) !!}</small></p>
                                         <p class="fw-bold"><i class="bi bi-geo-alt me-2"></i>{{ $event->location }}
                                         </p>
                                         <p class="fw-bold"><i
@@ -219,17 +236,21 @@
                     @else
                         <div class="row">
                             @foreach ($futureEvents as $event)
-                                <div class="col-md-4 mb-4">
+                                <div class="col-md-3 mb-4">
                                     <div class="overflow-hidden">
                                         <div class="position-relative">
-                                            <img src="data:image/jpeg;base64,{{ base64_encode($event->poster) }}"
-                                                alt="{{ $event->name }}" class="img-fluid">
-                                            <span
-                                                class="position-absolute top-0 start-0 m-3 badge bg-warning text-dark">{{ \Carbon\Carbon::parse($event->date)->format('D | d M Y') }}</span>
+                                            <a href="{{ route('event.details', ['id' => $event->id]) }}">
+                                                <img src="data:image/jpeg;base64,{{ base64_encode($event->poster) }}"
+                                                    alt="{{ $event->name }}" class="event-img">
+                                                <span
+                                                    class="position-absolute top-0 start-0 m-3 badge bg-warning text-dark">{{ \Carbon\Carbon::parse($event->date)->format('D | d M Y') }}</span>
+                                            </a>
                                         </div>
                                         <p>{{ $event->club->name }}</p>
-                                        <p class="fw-bold">{{ $event->name }} ></p>
-                                        <p><small>{{ $event->description }}</small></p>
+                                        <p class="fw-bold"><a
+                                                href="{{ route('event.details', ['id' => $event->id]) }}">{{ $event->name }}
+                                                ></a></p>
+                                        <p><small>{!! \Illuminate\Support\Str::limit($event->description, 100) !!}</small></p>
                                         <p class="fw-bold"><i class="bi bi-geo-alt me-2"></i>{{ $event->location }}
                                         </p>
                                         <p class="fw-bold"><i

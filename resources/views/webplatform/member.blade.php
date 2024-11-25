@@ -52,6 +52,7 @@
                         <th class="text-white">Student ID</th>
                         <th class="text-white">Sunway Imail</th>
                         <th class="text-white">Phone No.</th>
+                        <th class="text-white">Course of Study</th>
                         <th class="text-white"></th>
                     </thead>
                 </table>
@@ -68,7 +69,7 @@
 
     <!-- Edit Member Modal -->
     <div class="modal fade" id="editMemberModal" tabindex="-1" aria-labelledby="editMemberModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-fullscreen-sm-down">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="editMemberModalLabel">Edit Member</h5>
@@ -107,7 +108,9 @@
                             <input type="text" class="form-control" id="edit_course_of_study" required>
                             <div class="invalid-feedback">Please enter a valid course.</div>
                         </div>
-                        <button type="submit" class="btn btn-primary">Save changes</button>
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -116,7 +119,7 @@
 
     <!-- Add Member Modal -->
     <div class="modal fade" id="addMemberModal" tabindex="-1" aria-labelledby="addMemberModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-fullscreen-sm-down">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="addMemberModalLabel">Add Member</h5>
@@ -155,7 +158,9 @@
                             <input type="text" class="form-control" id="add_course_of_study" required>
                             <div class="invalid-feedback">Please enter a valid course.</div>
                         </div>
-                        <button type="submit" class="btn btn-primary">Add Member</button>
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary">Add Member</button>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -187,6 +192,9 @@
                     },
                     {
                         "data": "phone"
+                    },
+                    {
+                        "data": "course_of_study"
                     },
                     {
                         "data": null,
@@ -251,10 +259,6 @@
                 <td>${d.personal_email}</td>
             </tr>
             <tr>
-                <td>Course of Study:</td>
-                <td>${d.course_of_study}</td>
-            </tr>
-            <tr>
                 <td>Date Joined:</td>
                 <td>${formattedDate}</td>
             </tr>
@@ -274,7 +278,7 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
-                        url: `/iclub/club-members/${memberId}`,
+                        url: `/iclub/clubMember/${memberId}`,
                         type: 'DELETE',
                         headers: {
                             'X-CSRF-TOKEN': '{{ csrf_token() }}'
@@ -339,7 +343,7 @@
         function editMember(memberId) {
             // Fetch member data via AJAX
             $.ajax({
-                url: `/iclub/club-members/${memberId}`,
+                url: `/iclub/clubMember/${memberId}`,
                 type: 'GET',
                 success: function(data) {
                     // Populate modal fields with member data
@@ -380,7 +384,7 @@
 
             // Send the updated data via AJAX
             $.ajax({
-                url: `/iclub/club-members/${memberId}`,
+                url: `/iclub/clubMember/${memberId}`,
                 type: 'PUT',
                 data: {
                     _token: '{{ csrf_token() }}',

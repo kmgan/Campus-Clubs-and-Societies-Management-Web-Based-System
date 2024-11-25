@@ -46,7 +46,7 @@ class User extends Authenticatable
 
     public function club()
     {
-        return $this->belongsToMany(Club::class);
+        return $this->belongsTo(Club::class);
     }
 
     public function event()

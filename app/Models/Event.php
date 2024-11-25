@@ -18,7 +18,8 @@ class Event extends Model
         'date',
         'start_time',
         'end_time',
-        'club_id'
+        'club_id',
+        'theme'
     ];
 
     // Specify any custom attributes that shouldn't be cast to default types
@@ -37,5 +38,15 @@ class Event extends Model
     public function participant()
     {
         return $this->belongsToMany(User::class, 'event_participant');
+    }
+
+    public function participants()
+    {
+        return $this->hasMany(EventParticipant::class, 'event_id');
+    }
+
+    public function isUserRegistered($user)
+    {
+        return $this->participants()->where('user_id', $user->id)->exists();
     }
 }
