@@ -19,7 +19,9 @@ class Event extends Model
         'start_time',
         'end_time',
         'club_id',
-        'theme'
+        'theme',
+        'background_color',
+        'text_color',
     ];
 
     // Specify any custom attributes that shouldn't be cast to default types
@@ -47,6 +49,9 @@ class Event extends Model
 
     public function isUserRegistered($user)
     {
-        return $this->participants()->where('user_id', $user->id)->exists();
+        return $this->participants()
+            ->where('user_id', $user->id)
+            ->whereIn('isApproved', [0, 1]) // You can check both pending (0) and approved (1) status
+            ->exists();
     }
 }

@@ -48,12 +48,17 @@
     </style>
 </head>
 
-<body class="{{ strtolower($event->theme) == 'dark' ? 'text-light' : 'text-dark' }}">
-    <!-- Background Video -->
-    <video autoplay loop muted class="background-video">
-        <source src="/videos/{{ strtolower($event->theme) }}.mp4" type="video/mp4">
-        Your browser does not support the video tag.
-    </video>
+<body
+    class="{{ strtolower($event->theme) == 'dark' ? 'text-light' : (strtolower($event->theme) == 'minimal' ? '' : 'text-dark') }}"
+    style="background-color: {{ strtolower($event->theme) == 'minimal' ? $event->background_color : '' }}; color: {{ strtolower($event->theme) == 'minimal' ? $event->text_color : '' }};">
+
+    <!-- Background Video, shown only for Light and Dark themes -->
+    @if (strtolower($event->theme) == 'light' || strtolower($event->theme) == 'dark')
+        <video autoplay loop muted class="background-video">
+            <source src="/videos/{{ strtolower($event->theme) }}.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    @endif
 
     <!-- Back Link -->
     <div class="container-fluid float-start">

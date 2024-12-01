@@ -19,9 +19,15 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
+        'username', // Add username
         'name',
-        'email',
-        'password',
+        'email', // Add Sunway iMail
+        'student_id', // Add student ID
+        'personal_email', // Add personal email
+        'phone', // Add phone
+        'course_of_study', // Add course of study
+        'club_id', // Add club_id for club association
+        'password', // Ensure password is included for account creation
     ];
 
     /**
@@ -44,12 +50,19 @@ class User extends Authenticatable
         'password' => 'hashed',
     ];
 
+    /**
+     * Relationship with Club.
+     */
     public function club()
     {
-        return $this->belongsTo(Club::class);
+        return $this->belongsTo(Club::class, 'club_id');
     }
 
-    public function event()
+
+    /**
+     * Relationship with Event.
+     */
+    public function events()
     {
         return $this->belongsToMany(Event::class, 'event_participant');
     }

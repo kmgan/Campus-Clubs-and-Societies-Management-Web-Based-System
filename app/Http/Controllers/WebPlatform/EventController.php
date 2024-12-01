@@ -38,9 +38,10 @@ class EventController extends Controller
             $query->where('date', '<', Carbon::now())->orderBy('date', 'desc');
         }
 
-        // Filter by participation status (participating, available, all)
         if ($user->hasRole('user')) {
-            if ($participationStatus == 'participating') {
+            if ($participationStatus == 'all') {
+                // No filtering needed
+            } elseif ($participationStatus == 'participating') {
                 $query->whereHas('participants', function ($q) {
                     $q->where('user_id', Auth::id());
                 });
@@ -51,8 +52,9 @@ class EventController extends Controller
             }
         }
 
-        // Get the filtered events
-        $events = $query->get();
+        $events = $query->withCount(['participants', 'participants as pending_participants_count' => function ($q) {
+            $q->where('isApproved', 0);
+        }])->get();
 
         // Return the view with the filtered events
         return view('webplatform.event', compact('events'));
@@ -128,19 +130,19 @@ class EventController extends Controller
     {
         try {
 
-            // Log the request data
-            Log::info('Incoming request for event creation', $request->all());
-
             // Validation rules
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
-                'poster' => 'required|mimes:jpeg,png,jpg,gif|max:2048',
+                'poster' => 'required|mimes:jpeg,png,jpg|max:10240',
                 'description' => 'required|string',
                 'location' => 'required|string',
                 'date' => 'required|date',
                 'start_time' => 'required|date_format:H:i',
                 'end_time' => 'required|date_format:H:i|after:start_time',
-                'theme' => 'required|string|in:Light,Dark'
+                'max_participants' => 'required|integer|min:0',
+                'theme' => 'required|string|in:Light,Dark,Minimal',
+                'background_color' => 'nullable|string',
+                'text_color' => 'nullable|string',
             ]);
 
             // Create new Event model instance and save it
@@ -152,8 +154,11 @@ class EventController extends Controller
             $event->date = $request->date;
             $event->start_time = $request->start_time;
             $event->end_time = $request->end_time;
+            $event->max_participants = $request->max_participants;
             $event->club_id = Auth::user()->club_id;
             $event->theme = $request->theme;
+            $event->background_color = $request->background_color;
+            $event->text_color = $request->text_color;
             $event->save();
 
             Log::info('Event created successfully', ['event_id' => $event->id]);
@@ -183,9 +188,12 @@ class EventController extends Controller
                     'date' => $event->date->format('Y-m-d'),
                     'start_time' => Carbon::parse($event->start_time)->format('H:i'),
                     'end_time' => Carbon::parse($event->end_time)->format('H:i'),
+                    'max_participants' => $event->max_participants,
                     'description' => $event->description,
                     'theme' => $event->theme,
                     'poster' => $event->poster ? base64_encode($event->poster) : null,
+                    'background_color' => $event->background_color,
+                    'text_color' => $event->text_color,
                 ],
             ]);
         } catch (\Exception $e) {
@@ -202,9 +210,12 @@ class EventController extends Controller
             'date' => 'required|date',
             'start_time' => 'required|date_format:H:i',
             'end_time' => 'required|date_format:H:i|after:start_time',
+            'max_participants' => 'required|integer|min:0',
             'description' => 'required|string',
-            'poster' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'poster' => 'nullable|image|mimes:jpeg,png,jpg|max:10240',
             'theme' => 'required|string',
+            'background_color' => 'nullable|string',
+            'text_color' => 'nullable|string',
         ]);
 
         try {
@@ -214,8 +225,11 @@ class EventController extends Controller
             $event->date = $request->date;
             $event->start_time = $request->start_time;
             $event->end_time = $request->end_time;
+            $event->max_participants = $request->max_participants;
             $event->description = $request->description;
             $event->theme = $request->theme;
+            $event->background_color = $request->background_color;
+            $event->text_color = $request->text_color;
 
             if ($request->hasFile('poster')) {
                 $event->poster = file_get_contents($request->file('poster')->getRealPath());
@@ -247,9 +261,11 @@ class EventController extends Controller
             ->select(
                 'event_participant.id as participant_id',
                 'users.name',  // Fetch the user's name
-                'event_participant.present' // Fetch the present status
+                'event_participant.isPresent', // Fetch the present status
+                'event_participant.isApproved'
             )
             ->where('event_participant.event_id', $eventId) // Filter by event_id
+            ->where('event_participant.isApproved', 1)
             ->get();
 
         // Return the data in DataTables-compatible format
@@ -262,11 +278,100 @@ class EventController extends Controller
     {
         $validated = $request->validate([
             'participant_id' => 'required|exists:event_participant,id',
-            'present' => 'required|in:0,1',
+            'isPresent' => 'required|in:0,1',
         ]);
 
         $participant = EventParticipant::find($validated['participant_id']);
-        $participant->present = $validated['present'];
+        $participant->isPresent = $validated['isPresent'];
         $participant->save();
+    }
+
+    public function getPendingParticipant($eventId)
+    {
+        /** @var \App\Models\User */
+        $user = Auth::user();
+
+        // Ensure that the user has the club_manager or admin role
+        if ($user->hasRole(['club_manager', 'admin'])) {
+            $event = Event::find($eventId);
+
+            if (is_null($event)) {
+                return response()->json(['message' => 'Event not found.'], 404);
+            }
+
+            // Retrieve pending participants
+            $participants = DB::table('event_participant')
+                ->join('users', 'event_participant.user_id', '=', 'users.id')
+                ->select(
+                    'event_participant.id as participant_id',
+                    'users.name',
+                    'users.student_id',
+                    'event_participant.isApproved'
+                )
+                ->where('event_participant.event_id', $eventId)
+                ->where('event_participant.isApproved', 0)
+                ->get();
+
+            return response()->json(['participants' => $participants]);
+        }
+
+        return response()->json(['message' => 'Unauthorized'], 403);
+    }
+
+    public function approveParticipant($id)
+    {
+        /** @var \App\Models\User */
+        $user = Auth::user();
+
+        // Log the user trying to approve and the participant ID
+        Log::info("User {$user->id} with role(s): " . implode(', ', $user->getRoleNames()->toArray()) . " is attempting to approve participant ID: {$id}");
+
+        if ($user->hasRole(['club_manager', 'admin'])) {
+            // Find the participant using both id and isApproved to ensure it matches the pending state
+            $participant = EventParticipant::where('id', $id)->where('isApproved', 0)->first();
+
+            if ($participant) {
+                // Log that we found the participant
+                Log::info("Participant found: " . $participant->id);
+
+                // Update isApproved field to approve the participant
+                $participant->isApproved = 1;
+                $participant->save();
+
+                Log::info("Participant {$id} approved successfully by user {$user->id}");
+
+                return response()->json(['message' => 'Participant approved successfully.']);
+            }
+
+            // Log if participant not found or already approved
+            Log::warning("Participant {$id} not found or already approved.");
+
+            return response()->json(['message' => 'Participant not found or already approved.'], 404);
+        }
+
+        // Log unauthorized attempt
+        Log::warning("Unauthorized approval attempt by user {$user->id} for participant {$id}");
+
+        return response()->json(['message' => 'Unauthorized'], 403);
+    }
+
+    public function rejectParticipant($id)
+    {
+        /** @var \App\Models\User */
+        $user = Auth::user();
+
+        if ($user->hasRole(['club_manager', 'admin'])) {
+            $participant = EventParticipant::find($id);
+
+            if ($participant && !$participant->isApproved) {
+                $participant->delete();
+
+                return response()->json(['message' => 'Participant rejected successfully.']);
+            }
+
+            return response()->json(['message' => 'Participant not found or already processed.'], 404);
+        }
+
+        return response()->json(['message' => 'Unauthorized'], 403);
     }
 }

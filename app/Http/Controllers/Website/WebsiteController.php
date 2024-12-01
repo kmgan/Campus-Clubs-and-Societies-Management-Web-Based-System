@@ -15,10 +15,10 @@ class WebsiteController extends Controller
     public function index(Request $request)
     {
         // Get clubs with search and category filters
-        $clubs = $this->getFilteredClubs($request->input('keyword'), $request->input('category_name'));
+        $clubs = $this->getFilteredClubs($request->input('keyword'), $request->input('category_id'));
 
         // Fetch categories for the dropdown
-        $categories = ClubCategory::all();
+        $categories = ClubCategory::all(); // Fetch all categories
 
         // Fetch events for this month and future events
         [$thisMonthEvents, $futureEvents] = $this->getEvents();
@@ -27,20 +27,25 @@ class WebsiteController extends Controller
         return view('website.home', compact('clubs', 'categories', 'thisMonthEvents', 'futureEvents'));
     }
 
-    private function getFilteredClubs($keyword, $categoryName)
+
+    private function getFilteredClubs($keyword, $categoryId)
     {
         $clubsQuery = Club::query();
 
+        // Filter by keyword
         if ($keyword) {
             $clubsQuery->where('name', 'like', '%' . $keyword . '%');
         }
 
-        if ($categoryName && $categoryName !== 'All categories') {
-            $clubsQuery->where('category', $categoryName);
+        // Filter by category ID
+        if ($categoryId && $categoryId !== 'All categories') {
+            $clubsQuery->where('category_id', $categoryId);
         }
 
-        return $clubsQuery->get()->groupBy('category');
+        // Group by category_id
+        return $clubsQuery->get()->groupBy('category_id');
     }
+
 
     private function getEvents()
     {
@@ -65,6 +70,17 @@ class WebsiteController extends Controller
 
     public function showClubDetails($id)
     {
-        return view('website.club', compact('club'));
+        $club = Club::with(['club_gallery', 'members'])->findOrFail($id);
+
+        // Calculate the number of members
+        $memberCount = $club->members()->count();
+
+        // Assuming you have a relation 'events' in your Club model
+        $eventsOrganized = $club->events()->count();
+
+        // Get the year the club was established (assuming there is a `created_at` or a similar field)
+        $establishedDate = $club->created_at->format('m/Y');
+
+        return view('website.club', compact('club', 'memberCount', 'eventsOrganized', 'establishedDate'));
     }
 }

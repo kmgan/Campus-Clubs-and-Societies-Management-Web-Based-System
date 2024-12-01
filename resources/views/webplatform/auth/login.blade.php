@@ -31,7 +31,7 @@
 
         .card {
             width: 100%;
-            max-width: 450px;
+            max-width: 500px;
             /* Set a reasonable max width */
         }
 
@@ -56,13 +56,17 @@
                 /* Small margin to keep some spacing on the sides */
             }
         }
+
+        a{
+            text-decoration: none;
+        }
     </style>
 </head>
 
 <body>
     <!-- Title Positioned at the Top Center -->
     <div class="title-container">
-        <h1 class="text-dark fw-bold"><i>iClub</i></h1>
+        <a href="{{ route('login') }}"><h1 class="text-dark fw-bold"><i>iClub</i></h1></a>
     </div>
 
     <!-- Container for Login Card -->
@@ -97,6 +101,11 @@
                             <input id="password" type="password"
                                 class="form-control @error('password') is-invalid @enderror" name="password" required
                                 autocomplete="current-password">
+                            {{-- @if (Route::has('password.request'))
+                                <a class="btn btn-link" href="{{ route('password.request') }}">
+                                    {{ __('Forgot Your Password?') }}
+                                </a>
+                            @endif --}}
 
                             @error('password')
                                 <span class="invalid-feedback" role="alert">
@@ -106,7 +115,7 @@
                         </div>
                     </div>
 
-                    <div class="row mb-3">
+                    {{-- <div class="row mb-3">
                         <div class="col-md-6 offset-md-4">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" name="remember" id="remember"
@@ -117,19 +126,13 @@
                                 </label>
                             </div>
                         </div>
-                    </div>
+                    </div> --}}
 
                     <div class="row mb-0">
                         <div class="col-md-8 offset-md-4">
                             <button type="submit" class="btn btn-primary">
                                 {{ __('Login') }}
                             </button>
-
-                            @if (Route::has('password.request'))
-                                <a class="btn btn-link" href="{{ route('password.request') }}">
-                                    {{ __('Forgot Your Password?') }}
-                                </a>
-                            @endif
                         </div>
                     </div>
                 </form>

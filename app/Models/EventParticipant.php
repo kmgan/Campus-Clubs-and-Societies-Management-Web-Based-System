@@ -14,10 +14,10 @@ class EventParticipant extends Model
     protected $fillable = [
         'user_id',
         'event_id',
-        'present',
+        'isPresent',
     ];
 
     protected $casts = [
-        'present' => 'boolean'
+        'isPresent' => 'boolean'
     ];
 }

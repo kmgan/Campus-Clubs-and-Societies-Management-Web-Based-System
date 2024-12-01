@@ -48,11 +48,6 @@
             scroll-padding-top: 83px;
         }
 
-        .event-image{
-            width: 100%;
-            height: 250px;
-        }
-
         @media (max-width: 767.98px) {
             html {
                 scroll-padding-top: 200px;
@@ -118,9 +113,7 @@
         <div class="container-fluid rounded-top-right-1 text-bg-light col-12 border-0 p-0" id="clubs">
             <div class="p-5 mx-md-5">
                 <h1 class="fw-bold">Our Clubs and Societies</h1>
-
-                <!-- Search Form -->
-                <form method="GET" action="{{ route('home') }}">
+                <form id="searchForm" method="GET" action="{{ route('home') }}">
                     <div class="row">
                         <div class="col-5">
                             <p>Search by keyword</p>
@@ -129,23 +122,23 @@
                             <p>Search by category</p>
                         </div>
                     </div>
-
                     <div class="row">
                         <div class="col-5">
                             <div class="input-group">
-                                <input type="text" name="keyword" class="form-control form-control-sm"
+                                <input type="text" id="keyword" name="keyword" class="form-control form-control-sm"
                                     placeholder="Keywords" value="{{ request('keyword') }}">
                             </div>
                         </div>
                         <div class="col-5">
                             <div class="input-group">
-                                <select name="category_name" class="form-select form-select-sm">
+                                <select id="category" name="category_id" class="form-select form-select-sm">
                                     <option value="All categories"
-                                        {{ request('category_name') == 'All categories' ? 'selected' : '' }}>All
-                                        categories</option>
+                                        {{ request('category_id') == 'All categories' ? 'selected' : '' }}>
+                                        All categories
+                                    </option>
                                     @foreach ($categories as $category)
-                                        <option value="{{ $category->name }}"
-                                            {{ request('category_name') == $category->name ? 'selected' : '' }}>
+                                        <option value="{{ $category->id }}"
+                                            {{ request('category_id') == $category->id ? 'selected' : '' }}>
                                             {{ $category->name }}
                                         </option>
                                     @endforeach
@@ -158,37 +151,46 @@
                         </div>
                     </div>
                 </form>
-
-                <!-- Render Clubs -->
                 <br>
-                @if ($clubs->isEmpty())
-                    <p>No clubs found.</p>
-                @else
-                    @foreach ($clubs as $category => $categoryClubs)
-                        <div class="row">
-                            <p><span
-                                    class="border px-4 py-1 fw-bold club-category-bg rounded-3 nowrap">{{ $category }}</span>
-                            </p>
-                        </div>
-
-                        <div class="row">
-                            @foreach ($categoryClubs as $club)
-                                <div class="col-md-3 my-4">
-                                    <div class="border p-3 text-center">
-                                        <img src="data:image/jpeg;base64,{{ base64_encode($club->logo) }}"
-                                            alt="{{ $club->name }}" class="img-fluid"
-                                            style="max-width: 150px; height: 150px; object-fit: contain;">
-                                        <div class="fw-bold mt-2">{{ $club->name }} ></div>
+                <!-- Render Clubs -->
+                <div id="clubsList">
+                    @if ($clubs->isEmpty())
+                        <p>No clubs found.</p>
+                    @else
+                        @foreach ($clubs as $categoryId => $categoryClubs)
+                            <div class="row">
+                                <p>
+                                    <span class="border px-4 py-1 fw-bold club-category-bg rounded-3 nowrap">
+                                        {{ $categories->firstWhere('id', $categoryId)->name }}
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="row">
+                                @foreach ($categoryClubs as $club)
+                                    <div class="col-md-6 col-xl-3 my-4">
+                                        <div class="card h-100 text-center bg-transparent">
+                                            <h5 class="card-title pt-3"><a
+                                                    href="{{ route('club.details', ['id' => $club->id]) }}"
+                                                    target="_blank"><img
+                                                        src="data:image/jpeg;base64,{{ base64_encode($club->logo) }}"
+                                                        alt="{{ $club->name }}" class="card-img-top mx-auto"
+                                                        style="max-width: 150px; height: 150px; object-fit: contain;"></a>
+                                                <div class="card-body">
+                                                    <h5 class="card-title"><a
+                                                            href="{{ route('club.details', ['id' => $club->id]) }}"
+                                                            target="_blank">
+                                                            {{ $club->name }} ></a></h5>
+                                                </div>
+                                        </div>
                                     </div>
-                                </div>
-                            @endforeach
-                        </div>
-
-                        @if (!$loop->last)
-                            <hr class="my-4">
-                        @endif
-                    @endforeach
-                @endif
+                                @endforeach
+                            </div>
+                            @if (!$loop->last)
+                                <hr class="my-4">
+                            @endif
+                        @endforeach
+                    @endif
+                </div>
             </div>
 
             <!-- Events Section -->
@@ -203,26 +205,30 @@
                     @else
                         <div class="row">
                             @foreach ($thisMonthEvents as $event)
-                                <div class="col-md-3 mb-4">
-                                    <div class="overflow-hidden">
-                                        <div class="position-relative">
-                                            <a href="{{ route('event.details', ['id' => $event->id]) }}">
-                                                <img src="data:image/jpeg;base64,{{ base64_encode($event->poster) }}"
-                                                    alt="{{ $event->name }}" class="event-img">
-                                                <span
-                                                    class="position-absolute top-0 start-0 m-3 badge bg-warning text-dark">{{ \Carbon\Carbon::parse($event->date)->format('D | d M Y') }}</span>
+                                <div class="col-md-6 col-xl-3 mb-4">
+                                    <div class="card border-0 h-100 bg-transparent text-white">
+                                        <a href="{{ route('event.details', ['id' => $event->id]) }}" target="_blank">
+                                            <img src="data:image/jpeg;base64,{{ base64_encode($event->poster) }}"
+                                                alt="{{ $event->name }}" class="card-img-top img-fluid"
+                                                style="height: 350px; object-fit: cover; width: 100%;">
+                                        </a>
+                                        <div class="card-body">
+                                            <p class="card-text text-white-50 fw-bold">{{ $event->club->name }}</p>
+                                            <a href="{{ route('event.details', ['id' => $event->id]) }}"
+                                                target="_blank">
+                                                <h5 class="card-title">{{ $event->name }} ></h5>
                                             </a>
+                                            <p class="card-text">
+                                                {{ \Carbon\Carbon::parse($event->date)->format('D | d M Y') }}</p>
+                                            <p class="card-text">
+                                                <i class="bi bi-geo-alt me-2"></i>{{ $event->location }}
+                                            </p>
+                                            <p class="card-text">
+                                                <i
+                                                    class="bi bi-clock me-2"></i>{{ \Carbon\Carbon::parse($event->start_time)->format('h:iA') }}
+                                                - {{ \Carbon\Carbon::parse($event->end_time)->format('h:iA') }}
+                                            </p>
                                         </div>
-                                        <p class="fw-bold"><a
-                                                href="{{ route('event.details', ['id' => $event->id]) }}">{{ $event->name }}
-                                                ></a></p>
-                                        <p class="fw-bold">{{ $event->name }} ></p>
-                                        <p><small>{!! \Illuminate\Support\Str::limit($event->description, 100) !!}</small></p>
-                                        <p class="fw-bold"><i class="bi bi-geo-alt me-2"></i>{{ $event->location }}
-                                        </p>
-                                        <p class="fw-bold"><i
-                                                class="bi bi-clock me-2"></i>{{ \Carbon\Carbon::parse($event->start_time)->format('h:iA') }}
-                                            - {{ \Carbon\Carbon::parse($event->end_time)->format('h:iA') }}</p>
                                     </div>
                                 </div>
                             @endforeach
@@ -236,26 +242,30 @@
                     @else
                         <div class="row">
                             @foreach ($futureEvents as $event)
-                                <div class="col-md-3 mb-4">
-                                    <div class="overflow-hidden">
-                                        <div class="position-relative">
-                                            <a href="{{ route('event.details', ['id' => $event->id]) }}">
-                                                <img src="data:image/jpeg;base64,{{ base64_encode($event->poster) }}"
-                                                    alt="{{ $event->name }}" class="event-img">
-                                                <span
-                                                    class="position-absolute top-0 start-0 m-3 badge bg-warning text-dark">{{ \Carbon\Carbon::parse($event->date)->format('D | d M Y') }}</span>
+                                <div class="col-md-6 col-xl-3 mb-4">
+                                    <div class="card h-100 border-0 bg-transparent text-white">
+                                        <a href="{{ route('event.details', ['id' => $event->id]) }}" target="_blank">
+                                            <img src="data:image/jpeg;base64,{{ base64_encode($event->poster) }}"
+                                                alt="{{ $event->name }}" class="card-img-top img-fluid"
+                                                style="height: 350px; object-fit: cover; width: 100%;">
+                                        </a>
+                                        <div class="card-body">
+                                            <p class="card-text text-white-50 fw-bold">{{ $event->club->name }}</p>
+                                            <a href="{{ route('event.details', ['id' => $event->id]) }}"
+                                                target="_blank">
+                                                <h5 class="card-title">{{ $event->name }} ></h5>
                                             </a>
+                                            <p class="card-text">
+                                                {{ \Carbon\Carbon::parse($event->date)->format('D | d M Y') }}</p>
+                                            <p class="card-text">
+                                                <i class="bi bi-geo-alt me-2"></i>{{ $event->location }}
+                                            </p>
+                                            <p class="card-text">
+                                                <i
+                                                    class="bi bi-clock me-2"></i>{{ \Carbon\Carbon::parse($event->start_time)->format('h:iA') }}
+                                                - {{ \Carbon\Carbon::parse($event->end_time)->format('h:iA') }}
+                                            </p>
                                         </div>
-                                        <p>{{ $event->club->name }}</p>
-                                        <p class="fw-bold"><a
-                                                href="{{ route('event.details', ['id' => $event->id]) }}">{{ $event->name }}
-                                                ></a></p>
-                                        <p><small>{!! \Illuminate\Support\Str::limit($event->description, 100) !!}</small></p>
-                                        <p class="fw-bold"><i class="bi bi-geo-alt me-2"></i>{{ $event->location }}
-                                        </p>
-                                        <p class="fw-bold"><i
-                                                class="bi bi-clock me-2"></i>{{ \Carbon\Carbon::parse($event->start_time)->format('h:iA') }}
-                                            - {{ \Carbon\Carbon::parse($event->end_time)->format('h:iA') }}</p>
                                     </div>
                                 </div>
                             @endforeach
@@ -274,6 +284,37 @@
                 if ($('.navbar-toggler').is(':visible')) {
                     $('#navbarTogglerDemo02').collapse('hide');
                 }
+            });
+
+            // Intercept the form submission
+            $('#searchForm').on('submit', function(event) {
+                event.preventDefault(); // Prevent the default form submission
+
+                // Get the form action URL and the form data
+                const url = $(this).attr('action');
+                const formData = $(this).serialize(); // Serialize the form data
+
+                // Perform AJAX request
+                $.ajax({
+                    url: url,
+                    method: 'GET',
+                    data: formData,
+                    beforeSend: function() {
+                        // You can add a loading spinner or message here
+                    },
+                    success: function(response) {
+                        // Update the clubs section with the new content
+                        $('#clubsList').html($(response).find('#clubsList').html());
+                    },
+                    error: function() {
+                        alert('Something went wrong. Please try again.');
+                    }
+                });
+            });
+
+            // Trigger form submission on input change
+            $('#keyword, #category').on('change input', function() {
+                $('#searchForm').submit();
             });
         });
     </script>

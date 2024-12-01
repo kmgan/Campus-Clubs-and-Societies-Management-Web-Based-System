@@ -21,7 +21,17 @@ class RedirectIfAuthenticated
 
         foreach ($guards as $guard) {
             if (Auth::guard($guard)->check()) {
-                return redirect()->route('iclub.dashboard.page');
+                /** @var \App\Models\User $user */
+                $user = Auth::guard($guard)->user();
+
+                // Redirect based on the user's role
+                if ($user->hasRole('admin')) {
+                    return redirect()->route('iclub.user.page');
+                } elseif ($user->hasRole('club_manager')) {
+                    return redirect()->route('iclub.clubMember.page');
+                } elseif ($user->hasRole('user')) {
+                    return redirect()->route('iclub.club.page');
+                }
             }
         }
 

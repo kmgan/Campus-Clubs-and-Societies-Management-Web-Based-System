@@ -12,21 +12,23 @@ class ClubMember extends Model
     // Define the table name if it's not the plural form of the model name
     protected $table = 'club_member';
 
-    // Define fillable properties to allow mass assignment
     protected $fillable = [
         'club_id',
-        'name',
-        'student_id',
-        'sunway_imail',
-        'personal_email',
-        'phone',
-        'course_of_study',
-        'created_at'
+        'role',
+        'isApproved', // Add this line to make 'isApproved' mass-assignable
+        'created_at',
+        'updated_at',
+        'user_id'
     ];
 
     // Define the relationship to the Club model
     public function club()
     {
         return $this->belongsTo(Club::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

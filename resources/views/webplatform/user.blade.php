@@ -1,6 +1,6 @@
 @extends('webplatform.shared.layout')
 
-@section('title', 'Users')
+@section('title', 'User')
 
 @section('content')
     <style>
@@ -48,7 +48,7 @@
                 <table id="usersTable" class="display compact table table-striped" style="width:100%">
                     <thead>
                         <th class="text-white">Name</th>
-                        <th class="text-white">Email</th>
+                        <th class="text-white">Sunway Imail</th>
                         <th class="text-white">Role</th>
                         <th class="text-white">Club Name</th>
                         <th class="text-white"></th>
@@ -76,13 +76,18 @@
                 <div class="modal-body">
                     <form id="addUserForm" class="needs-validation" novalidate>
                         <div class="mb-3">
+                            <label for="add_username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="add_username" required>
+                            <div class="invalid-feedback">Please enter a valid username.</div>
+                        </div>
+                        <div class="mb-3">
                             <label for="add_name" class="form-label">Name</label>
                             <input type="text" class="form-control" id="add_name" required>
                             <div class="invalid-feedback">Please enter a valid name.</div>
                         </div>
                         <div class="mb-3">
-                            <label for="add_email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="add_email" required>
+                            <label for="add_sunway_imail" class="form-label">Sunway Imail</label>
+                            <input type="email" class="form-control" id="add_sunway_imail">
                             <div class="invalid-feedback">Please enter a valid email format.</div>
                         </div>
                         <div class="mb-3">
@@ -97,6 +102,26 @@
                             <select id="add_club_id" class="form-select">
                                 <option value="">No Club</option>
                             </select>
+                        </div>
+                        <div class="mb-3 student-fields" style="display: none;">
+                            <label for="add_student_id" class="form-label">Student ID</label>
+                            <input type="text" class="form-control" id="add_student_id">
+                            <div class="invalid-feedback">Please enter a valid student ID.</div>
+                        </div>
+                        <div class="mb-3 personal-fields" style="display: none;">
+                            <label for="add_personal_email" class="form-label">Personal Email</label>
+                            <input type="email" class="form-control" id="add_personal_email">
+                            <div class="invalid-feedback">Please enter a valid email format.</div>
+                        </div>
+                        <div class="mb-3 personal-fields" style="display: none;">
+                            <label for="add_phone" class="form-label">Phone No.</label>
+                            <input type="text" class="form-control" id="add_phone">
+                            <div class="invalid-feedback">Please enter a valid phone number.</div>
+                        </div>
+                        <div class="mb-3 personal-fields" style="display: none;">
+                            <label for="add_course_of_study" class="form-label">Course of Study</label>
+                            <input type="text" class="form-control" id="add_course_of_study">
+                            <div class="invalid-feedback">Please enter a valid course of study.</div>
                         </div>
                         <div class="d-flex justify-content-end">
                             <button type="submit" class="btn btn-primary">Add</button>
@@ -124,8 +149,8 @@
                             <div class="invalid-feedback">Please enter a valid name.</div>
                         </div>
                         <div class="mb-3">
-                            <label for="edit_email" class="form-label">Email</label>
-                            <input type="email" class="form-control" id="edit_email" required>
+                            <label for="edit_sunway_imail" class="form-label">Sunway Imail</label>
+                            <input type="email" class="form-control" id="edit_sunway_imail" required>
                             <div class="invalid-feedback">Please enter a valid email format.</div>
                         </div>
                         <div class="mb-3">
@@ -140,6 +165,26 @@
                             <select id="edit_club_id" class="form-select">
                                 <option value="">No Club</option>
                             </select>
+                        </div>
+                        <div class="mb-3 student-fields" style="display: none;">
+                            <label for="edit_student_id" class="form-label">Student ID</label>
+                            <input type="text" class="form-control" id="edit_student_id">
+                            <div class="invalid-feedback">Please enter a valid student ID.</div>
+                        </div>
+                        <div class="mb-3 personal-fields" style="display: none;">
+                            <label for="edit_personal_email" class="form-label">Personal Email</label>
+                            <input type="email" class="form-control" id="edit_personal_email">
+                            <div class="invalid-feedback">Please enter a valid email format.</div>
+                        </div>
+                        <div class="mb-3 personal-fields" style="display: none;">
+                            <label for="edit_phone" class="form-label">Phone No.</label>
+                            <input type="text" class="form-control" id="edit_phone">
+                            <div class="invalid-feedback">Please enter a valid phone number.</div>
+                        </div>
+                        <div class="mb-3 personal-fields" style="display: none;">
+                            <label for="edit_course_of_study" class="form-label">Course of Study</label>
+                            <input type="text" class="form-control" id="edit_course_of_study">
+                            <div class="invalid-feedback">Please enter a valid course of study.</div>
                         </div>
                         <div class="d-flex justify-content-end">
                             <button type="submit" class="btn btn-primary">Save Changes</button>
@@ -178,10 +223,7 @@
                         }
                     },
                     {
-                        "data": "club_name",
-                        "render": function(data) {
-                            return data ? data : '';
-                        }
+                        "data": "club_name"
                     },
                     {
                         "data": null,
@@ -201,97 +243,74 @@
                 ],
                 search: {
                     return: true
-                },
+                }
+            });
+
+            $('#add_role').on('change', function() {
+                handleRoleChange(this.value); // Call the function when the role changes
+            });
+
+            $('#edit_role').on('change', function() {
+                handleRoleChange(this.value); // Call the function when the role changes
             });
 
         });
 
-        (() => {
-            'use strict';
-
-            const forms = document.querySelectorAll('.needs-validation');
-            Array.from(forms).forEach(form => {
-                form.addEventListener('submit', event => {
-                    if (!form.checkValidity()) {
-                        event.preventDefault();
-                        event.stopPropagation();
-                    }
-
-                    form.classList.add('was-validated');
-                }, false);
-            });
-        })();
-
-        function populateRolesAndClubs() {
-            // Populate roles dynamically
-            $.ajax({
-                url: '/iclub/role/data',
-                type: 'GET',
-                success: function(rolesData) {
-                    const addRoleSelect = $('#add_role');
-                    const editRoleSelect = $('#edit_role');
-                    addRoleSelect.empty();
-                    editRoleSelect.empty();
-                    addRoleSelect.append('<option value="">Select a role</option>');
-                    editRoleSelect.append('<option value="">Select a role</option>');
-                    rolesData.roles.forEach(role => {
-                        addRoleSelect.append(
-                            `<option value="${role.name}">${role.name}</option>`
-                        );
-                        editRoleSelect.append(
-                            `<option value="${role.name}">${role.name}</option>`
-                        );
-                    });
-                },
-                error: function(err) {
-                    console.error('Error fetching roles:', err);
-                    Swal.fire('Error!', 'An error occurred while fetching roles.', 'error');
-                }
-            });
-
-            // Populate clubs dynamically
-            $.ajax({
-                url: '/iclub/club/data',
-                type: 'GET',
-                success: function(clubsData) {
-                    const addClubSelect = $('#add_club_id');
-                    const editClubSelect = $('#edit_club_id');
-                    addClubSelect.empty();
-                    editClubSelect.empty();
-                    addClubSelect.append('<option value="">No Club</option>');
-                    editClubSelect.append('<option value="">No Club</option>');
-                    clubsData.clubs.forEach(club => {
-                        addClubSelect.append(
-                            `<option value="${club.id}">${club.name}</option>`
-                        );
-                        editClubSelect.append(
-                            `<option value="${club.id}">${club.name}</option>`
-                        );
-                    });
-                },
-                error: function(err) {
-                    console.error('Error fetching clubs:', err);
-                    Swal.fire('Error!', 'An error occurred while fetching clubs.', 'error');
-                }
-            });
-        }
-
-        function handleRoleChange(roleSelect) {
-            const clubSelectContainer = roleSelect.closest('.modal-body').querySelector('.club-select');
-            if (roleSelect.value === 'Club Manager') {
-                $(clubSelectContainer).show();
+        function handleRoleChange(role) {
+            if (role === 'club_manager') {
+                // Show the club selection field only for club managers
+                $('.club-select').show();
+                $('.student-fields').hide();
+                $('.personal-fields').hide();
+            } else if (role === 'user') {
+                // Show student and personal fields only for users
+                $('.student-fields').show();
+                $('.personal-fields').show();
+                $('.club-select').hide();
+            } else if (role === 'admin') {
+                // Hide all unnecessary fields for admin
+                $('.club-select, .student-fields, .personal-fields').hide();
             } else {
-                $(clubSelectContainer).hide();
+                // Default behavior: hide all fields
+                $('.club-select, .student-fields, .personal-fields').hide();
             }
         }
 
-        $('#add_role').on('change', function() {
-            handleRoleChange(this);
-        });
+        function addUser() {
+            $.ajax({
+                url: "{{ route('iclub.users.add') }}",
+                type: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}',
+                    username: $('#add_username').val(),
+                    name: $('#add_name').val(),
+                    email: $('#add_sunway_imail').val(),
+                    student_id: $('#add_student_id').val(),
+                    personal_email: $('#add_personal_email').val(),
+                    phone: $('#add_phone').val(),
+                    course_of_study: $('#add_course_of_study').val(),
+                    role: $('#add_role').val(),
+                    club_id: $('#add_club_id').val()
+                },
+                success: function(response) {
+                    $('#addUserModal').modal('hide');
+                    $('#addUserForm')[0].reset();
+                    $('#usersTable').DataTable().ajax.reload();
 
-        $('#edit_role').on('change', function() {
-            handleRoleChange(this);
-        });
+                    Swal.fire({
+                        title: 'Added!',
+                        text: response.message,
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                },
+                error: function(err) {
+                    console.error('Error adding user:', err);
+                    Swal.fire('Error!', 'An error occurred while adding the user.', 'error');
+                }
+            });
+        }
 
         function editUser(userId) {
             $.ajax({
@@ -300,7 +319,25 @@
                 success: function(data) {
                     $('#userId').val(data.id);
                     $('#edit_name').val(data.name);
-                    $('#edit_email').val(data.email);
+                    $('#edit_sunway_imail').val(data.email);
+                    $('#edit_student_id').val(data.student_id);
+                    $('#edit_personal_email').val(data.personal_email);
+                    $('#edit_phone').val(data.phone);
+                    $('#edit_course_of_study').val(data.course_of_study);
+                    $('#edit_role').val(data.role);
+
+                    if (data.role === 'club_manager') {
+                        $('#edit_club_id').val(data.club_id);
+                        $('.club-select').show();
+                        $('.student-fields').hide();
+                        $('.personal-fields').hide();
+                    } else if (data.role === 'user') {
+                        $('.student-fields').show();
+                        $('.personal-fields').show();
+                        $('.club-select').hide();
+                    } else {
+                        $('.club-select, .student-fields, .personal-fields').hide();
+                    }
 
                     $('#editUserModal').modal('show');
                     populateRolesAndClubs();
@@ -336,7 +373,11 @@
                 data: {
                     _token: '{{ csrf_token() }}',
                     name: $('#edit_name').val(),
-                    email: $('#edit_email').val(),
+                    email: $('#edit_sunway_imail').val(),
+                    student_id: $('#edit_student_id').val(),
+                    personal_email: $('#edit_personal_email').val(),
+                    phone: $('#edit_phone').val(),
+                    course_of_study: $('#edit_course_of_study').val(),
                     role: $('#edit_role').val(),
                     club_id: $('#edit_club_id').val()
                 },
@@ -370,39 +411,7 @@
             this.classList.add('was-validated');
         });
 
-        function addUser() {
-            $.ajax({
-                url: "{{ route('iclub.users.add') }}",
-                type: 'POST',
-                data: {
-                    _token: '{{ csrf_token() }}',
-                    name: $('#add_name').val(),
-                    email: $('#add_email').val(),
-                    role: $('#add_role').val(),
-                    club_id: $('#add_club_id').val()
-                },
-                success: function(response) {
-                    $('#addUserModal').modal('hide');
-                    $('#addUserForm')[0].reset();
-                    $('#usersTable').DataTable().ajax.reload();
-
-                    Swal.fire({
-                        title: 'Added!',
-                        text: response.message,
-                        icon: 'success',
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
-                },
-                error: function(err) {
-                    console.error('Error adding user:', err);
-                    Swal.fire('Error!', 'An error occurred while adding the user.', 'error');
-                }
-            });
-        }
-
         function deleteUser(userId) {
-            // Confirm with the user before deleting
             Swal.fire({
                 title: 'Are you sure?',
                 text: "You won't be able to revert this!",
@@ -419,32 +428,80 @@
                         headers: {
                             'X-CSRF-TOKEN': '{{ csrf_token() }}'
                         },
-                        success: function(result) {
-                            // Reload the table after deletion
+                        success: function(response) {
                             $('#usersTable').DataTable().ajax.reload();
 
                             Swal.fire({
                                 title: 'Deleted!',
-                                text: result.message,
+                                text: 'User deleted successfully.',
                                 icon: 'success',
                                 timer: 1500,
                                 showConfirmButton: false
                             });
                         },
                         error: function(err) {
-                            // Show error message
-                            Swal.fire(
-                                'Error!',
-                                err.responseJSON.message ||
-                                'An error occurred while deleting the user.',
-                                'error'
-                            );
-                            console.error(err);
+                            console.error('Error deleting user:', err);
+                            Swal.fire('Error!', 'An error occurred while deleting the user.', 'error');
                         }
                     });
                 }
             });
-        };
+        }
+
+        function populateRolesAndClubs() {
+            // Role display mapping
+            const roleDisplayNames = {
+                "admin": "Admin",
+                "club_manager": "Club Manager",
+                "user": "User"
+            };
+
+            // Populate roles dynamically
+            $.ajax({
+                url: '/iclub/role/data',
+                type: 'GET',
+                success: function(rolesData) {
+                    const addRoleSelect = $('#add_role');
+                    const editRoleSelect = $('#edit_role');
+                    addRoleSelect.empty();
+                    editRoleSelect.empty();
+                    addRoleSelect.append('<option value="">Select a role</option>');
+                    editRoleSelect.append('<option value="">Select a role</option>');
+                    rolesData.roles.forEach(role => {
+                        const displayName = roleDisplayNames[role.name] || role
+                        .name; // Use mapping or fallback to default
+                        addRoleSelect.append(`<option value="${role.name}">${displayName}</option>`);
+                        editRoleSelect.append(`<option value="${role.name}">${displayName}</option>`);
+                    });
+                },
+                error: function(err) {
+                    console.error('Error fetching roles:', err);
+                    Swal.fire('Error!', 'An error occurred while fetching roles.', 'error');
+                }
+            });
+
+            // Populate clubs dynamically
+            $.ajax({
+                url: '/iclub/club/data',
+                type: 'GET',
+                success: function(clubsData) {
+                    const addClubSelect = $('#add_club_id');
+                    const editClubSelect = $('#edit_club_id');
+                    addClubSelect.empty();
+                    editClubSelect.empty();
+                    addClubSelect.append('<option value="">No Club</option>');
+                    editClubSelect.append('<option value="">No Club</option>');
+                    clubsData.clubs.forEach(club => {
+                        addClubSelect.append(`<option value="${club.id}">${club.name}</option>`);
+                        editClubSelect.append(`<option value="${club.id}">${club.name}</option>`);
+                    });
+                },
+                error: function(err) {
+                    console.error('Error fetching clubs:', err);
+                    Swal.fire('Error!', 'An error occurred while fetching clubs.', 'error');
+                }
+            });
+        }
 
 
         $('#addUserModal, #editUserModal').on('show.bs.modal', function() {
@@ -455,6 +512,21 @@
             $(this).find('form')[0].reset();
             $(this).find('form').removeClass('was-validated');
         });
-    </script>
 
+        (() => {
+            'use strict';
+
+            const forms = document.querySelectorAll('.needs-validation');
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        })();
+    </script>
 @endsection

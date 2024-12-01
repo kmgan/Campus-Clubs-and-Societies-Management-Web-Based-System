@@ -5,6 +5,7 @@ namespace App\Http\Controllers\WebPlatform;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\ClubMember;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 
 class ClubMemberController extends Controller
@@ -17,43 +18,106 @@ class ClubMemberController extends Controller
     public function getClubMembersData()
     {
         /** @var \App\Models\User */
-        $user = Auth::user(); 
+        $user = Auth::user();
 
         if ($user->hasRole('club_manager')) {
             // Fetch only members that belong to the manager's club
             $members = ClubMember::select([
                 'club_member.id',
-                'club_member.name',
-                'club_member.student_id',
-                'club_member.sunway_imail',
-                'club_member.personal_email',
-                'club_member.phone',
-                'club_member.course_of_study',
-                'club_member.created_at',
-                'club.name as club_name'  // Getting the club name via join
-            ])
-                ->join('club', 'club_member.club_id', '=', 'club.id') // Joining with club table
-                ->where('club_member.club_id', $user->club_id) // Filter by logged-in user's club_id
-                ->get();
-        } else {
-            // If the user is not a club manager, they can view all members (you can customize this as needed)
-            $members = ClubMember::select([
-                'club_member.id',
-                'club_member.name',
-                'club_member.student_id',
-                'club_member.sunway_imail',
-                'club_member.personal_email',
-                'club_member.phone',
-                'club_member.course_of_study',
+                'users.name',
+                'users.student_id',
+                'users.email',
+                'club_member.role',
+                'users.personal_email',
+                'users.phone',
+                'users.course_of_study',
                 'club_member.created_at',
                 'club.name as club_name'
             ])
-                ->join('club', 'club_member.club_id', '=', 'club.id')
+                ->join('users', 'club_member.user_id', '=', 'users.id') // Join with users table
+                ->join('club', 'club_member.club_id', '=', 'club.id') // Join with club table
+                ->where('club_member.club_id', $user->club_id)
+                ->where('club_member.isApproved', 1)
                 ->get();
         }
 
         // Return data as JSON
         return response()->json(['data' => $members]);
+    }
+    public function getPendingMember()
+    {
+        /** @var \App\Models\User */
+        $user = Auth::user();
+
+        if ($user->hasRole('club_manager')) {
+            // Fetch only pending members that belong to the manager's club
+            $members = ClubMember::select([
+                'club_member.id',
+                'users.name',
+                'users.student_id'
+            ])
+                ->join('users', 'club_member.user_id', '=', 'users.id')
+                ->where('club_member.club_id', $user->club_id)
+                ->where('club_member.isapproved', 0)
+                ->get();
+
+            return response()->json(['members' => $members]);
+        }
+
+        return response()->json(['members' => []]);
+    }
+
+    public function approveMember($id)
+    {
+        /** @var \App\Models\User */
+        $user = Auth::user();
+
+        // Ensure the user is a club manager
+        if ($user->hasRole('club_manager')) {
+            // Find the club member and ensure they belong to the club managed by the authenticated user
+            $member = ClubMember::where('id', $id)
+                ->where('club_id', $user->club_id)
+                ->where('isapproved', 0)
+                ->first();
+
+            if ($member) {
+                // Approve the member
+                $member->isapproved = 1;
+                $member->save();
+
+                return response()->json(['message' => 'Member approved successfully.']);
+            } else {
+                return response()->json(['message' => 'Member not found or already approved.'], 404);
+            }
+        }
+
+        return response()->json(['message' => 'Unauthorized.'], 403);
+    }
+
+    public function rejectMember($id)
+    {
+        /** @var \App\Models\User */
+        $user = Auth::user();
+
+        // Ensure the user is a club manager
+        if ($user->hasRole('club_manager')) {
+            // Find the club member and ensure they belong to the club managed by the authenticated user
+            $member = ClubMember::where('id', $id)
+                ->where('club_id', $user->club_id)
+                ->where('isapproved', 0)
+                ->first();
+
+            if ($member) {
+                // Delete the member (reject)
+                $member->delete();
+
+                return response()->json(['message' => 'Member rejected successfully.']);
+            } else {
+                return response()->json(['message' => 'Member not found or already processed.'], 404);
+            }
+        }
+
+        return response()->json(['message' => 'Unauthorized.'], 403);
     }
 
     public function deleteMember($id)
@@ -71,45 +135,64 @@ class ClubMemberController extends Controller
             $member->delete();
             return response()->json(['message' => 'Member deleted successfully'], 200);
         } catch (\Exception $e) {
-            // If there's an error, return a response with the error message
+            // Return an error response if deletion fails
             return response()->json(['message' => 'Failed to delete member'], 500);
         }
     }
 
-    public function getMember($id)
-    {
-        $member = ClubMember::find($id);
-        return response()->json($member);
-    }
-
     public function updateMember(Request $request, $id)
     {
-        $member = ClubMember::find($id);
-        $member->update($request->only(['name', 'student_id', 'sunway_imail', 'phone', 'personal_email', 'course_of_study']));
-        return response()->json(['message' => 'Member updated successfully']);
-    }
-
-    public function addMember(Request $request)
-    {
+        // Validate that only the role is updated
         $request->validate([
-            'name' => 'required|string|max:255',
-            'student_id' => 'required|string|unique:club_member',
-            'sunway_imail' => 'required|email|unique:club_member',
-            'phone' => 'required|string',
-            'personal_email' => 'nullable|email',
-            'course_of_study' => 'required|string'
+            'role' => 'required|string'
         ]);
 
-        $member = new ClubMember();
-        $member->name = $request->name;
-        $member->student_id = $request->student_id;
-        $member->sunway_imail = $request->sunway_imail;
-        $member->phone = $request->phone;
-        $member->personal_email = $request->personal_email;
-        $member->course_of_study = $request->course_of_study;
-        $member->club_id = Auth::user()->club_id; // Assign club_id to the logged-in user's club
+        // Find the member by id
+        $member = ClubMember::find($id);
+
+        if (!$member) {
+            return response()->json(['message' => 'Member not found'], 404);
+        }
+
+        // Update the role
+        $member->role = $request->role;
         $member->save();
 
-        return response()->json(['message' => 'Member added successfully']);
+        return response()->json(['message' => 'Member role updated successfully']);
+    }
+
+    public function updateRole(Request $request, $id)
+    {
+        // Validate the incoming role value
+        $request->validate([
+            'role' => 'required|string|in:President,Vice President,Secretary,Treasurer,Public Relations,Event,Media,Member'
+        ]);
+
+        // Find the club member by ID
+        $member = ClubMember::find($id);
+
+        if (!$member) {
+            return response()->json(['message' => 'Member not found'], 404);
+        }
+
+        // Enforce the rule: Only one President and one Vice President per club
+        if (in_array($request->role, ['President', 'Vice President'])) {
+            $existingMember = ClubMember::where('club_id', $member->club_id)
+                ->where('role', $request->role)
+                ->first();
+
+            if ($existingMember && $existingMember->id !== $id) {
+                return response()->json([
+                    'message' => "Only one {$request->role} is allowed per club."
+                ], 422);
+            }
+        }
+
+        // Update the role
+        $member->role = $request->role;
+        $member->save();
+
+        // Return success response
+        return response()->json(['message' => 'Role updated successfully']);
     }
 }

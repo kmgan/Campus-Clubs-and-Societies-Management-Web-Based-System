@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Dashboard')</title>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title></title>
 
     <!-- CSS Libraries -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -30,7 +31,7 @@
 
         /* Sidebar Styles */
         .navbar-fixed-left {
-            width: 12.5rem;
+            width: 13rem;
             position: fixed;
             height: 100vh;
             overflow-y: auto;
@@ -57,8 +58,7 @@
 
         .nav-link {
             color: #eeeeee;
-            font-weight: 600;
-            font-size: 1.4rem;
+            font-size: 1.25rem;
         }
 
         .nav-link i {
@@ -115,7 +115,7 @@
 
         /* Main Content Styles */
         .content {
-            margin-left: 12.5rem;
+            margin-left: 13rem;
             /* Offset for sidebar */
             padding: 20px;
         }
@@ -156,6 +156,16 @@
             outline: 2px solid white;
             box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
         }
+
+        .nav-link {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .navbar-brand:focus{
+            color: white;
+        }
     </style>
 </head>
 
@@ -163,11 +173,26 @@
     <!-- Fixed Sidebar Navbar for Medium and Larger Screens -->
     <nav class="navbar sidebar navbar-fixed-left ps-3 d-none d-md-flex flex-column">
         <!-- Navbar Brand -->
-        <a class="navbar-brand custom-brand" href="#">iClub</a>
+        <a class="navbar-brand custom-brand" href="{{ route('home') }}" target="_blank">iClub</a>
         <ul class="navbar-nav flex-column w-100">
             <!-- Navigation Items -->
             <li class="nav-item">
-                <a class="nav-link" href="#"><i class="bi bi-columns-gap"></i>Dashboard</a>
+                <a class="nav-link"
+                    href="#" style="pointer-events: none;">
+                    {{ Auth::user()->name ?? 'Profile' }}
+                </a>
+            </li>
+            <li class="nav-item">
+                @hasanyrole('admin|user')
+                    <a class="nav-link {{ request()->routeIs('iclub.club.page') ? 'active' : '' }}"
+                        href="{{ route('iclub.club.page') }}"><i class="bi bi-people-fill"></i>Clubs</a>
+                @endrole
+            </li>
+            <li class="nav-item">
+                @hasrole('club_manager')
+                    <a class="nav-link {{ request()->routeIs('iclub.webContent.page') ? 'active' : '' }}"
+                        href="{{ route('iclub.webContent.page') }}"><i class="bi bi-pencil-square"></i>Web Content</a>
+                @endrole
             </li>
             <li class="nav-item">
                 @hasrole('club_manager')
@@ -178,18 +203,12 @@
             <li class="nav-item">
                 @hasrole('admin')
                     <a class="nav-link {{ request()->routeIs('iclub.user.page') ? 'active' : '' }}"
-                        href="{{ route('iclub.user.page') }}"><i class="bi bi-people-fill"></i>Users</a>
+                        href="{{ route('iclub.user.page') }}"><i class="bi bi-person-circle"></i></i>Users</a>
                 @endrole
             </li>
             <li class="nav-item">
                 <a class="nav-link {{ request()->routeIs('iclub.event.page') ? 'active' : '' }}"
                     href="{{ route('iclub.event.page') }}"><i class="bi bi-calendar-event"></i>Events</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#"><i class="bi bi-chat-left-text"></i>Messages</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#"><i class="bi bi-question-circle"></i>Help</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="{{ route('logout') }}"
@@ -210,35 +229,45 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <!-- Centered Navbar Brand -->
-                <a class="navbar-brand custom-brand ms-1" href="#">iClub</a>
+                <a class="navbar-brand custom-brand ms-1" href="{{ route('home') }}" target="_blank">iClub</a>
             </div>
             <div class="collapse navbar-collapse" id="mobileNavbar">
                 <ul class="navbar-nav">
                     <!-- Navigation Items (same as sidebar) -->
                     <li class="nav-item">
-                        <a class="nav-link" href="#"><i class="bi bi-columns-gap"></i>Dashboard</a>
+                        <a class="nav-link"
+                            href="#" style="pointer-events: none;">
+                            {{ Auth::user()->name ?? 'Profile' }}
+                        </a>
                     </li>
                     <li class="nav-item">
-                        @role('club_manager')
+                        @hasanyrole('admin|user')
+                            <a class="nav-link {{ request()->routeIs('iclub.club.page') ? 'active' : '' }}"
+                                href="{{ route('iclub.club.page') }}"><i class="bi bi-people-fill"></i>Clubs</a>
+                        @endrole
+                    </li>
+                    <li class="nav-item">
+                        @hasrole('club_manager')
+                            <a class="nav-link {{ request()->routeIs('iclub.webContent.page') ? 'active' : '' }}"
+                                href="{{ route('iclub.webContent.page') }}"><i class="bi bi-pencil-square"></i>Web
+                                Content</a>
+                        @endrole
+                    </li>
+                    <li class="nav-item">
+                        @hasrole('club_manager')
                             <a class="nav-link {{ request()->routeIs('iclub.clubMember.page') ? 'active' : '' }}"
                                 href="{{ route('iclub.clubMember.page') }}"><i class="bi bi-people-fill"></i>Members</a>
                         @endrole
                     </li>
                     <li class="nav-item">
-                        @role('admin')
+                        @hasrole('admin')
                             <a class="nav-link {{ request()->routeIs('iclub.user.page') ? 'active' : '' }}"
-                                href="{{ route('iclub.user.page') }}"><i class="bi bi-people-fill"></i>Users</a>
+                                href="{{ route('iclub.user.page') }}"><i class="bi bi-person-circle"></i></i>Users</a>
                         @endrole
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('iclub.event.page') ? 'active' : '' }}"
                             href="{{ route('iclub.event.page') }}"><i class="bi bi-calendar-event"></i>Events</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#"><i class="bi bi-chat-left-text"></i>Messages</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="#"><i class="bi bi-question-circle"></i>Help</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('logout') }}"

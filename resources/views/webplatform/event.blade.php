@@ -18,43 +18,6 @@
             margin-bottom: 0;
         }
 
-        .event-card {
-            overflow: hidden;
-        }
-
-        .event-image-container {
-            position: relative;
-        }
-
-        .event-image-container img {
-            width: 100%;
-            height: 250px;
-            transition: transform 0.3s ease-in-out;
-        }
-
-        .event-image-container .image-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.6);
-            opacity: 0;
-            transition: opacity 0.3s ease-in-out;
-            color: white;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-            font-weight: bold;
-            text-decoration: none;
-        }
-
-        .event-image-container:hover .image-overlay {
-            opacity: 1;
-        }
-
         .table-striped>tbody>tr:nth-child(odd)>td,
         .table-striped>tbody>tr:nth-child(odd)>th {
             background-color: white;
@@ -75,6 +38,43 @@
         .modal-content {
             background-color: #f4f4f4 !important;
         }
+
+        .image-container .image-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            color: white;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .image-container {
+            position: relative;
+        }
+
+        .image-container img {
+            width: 100%;
+            height: 250px;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .image-container:hover .image-overlay {
+            opacity: 1;
+        }
+
+        .details-card {
+            overflow: hidden;
+        }
     </style>
     <h1 class="fw-bold">Events</h1>
 
@@ -85,7 +85,7 @@
             <div class="row g-3">
                 <div class="col-md-4 col-12">
                     <div class="input-group">
-                        <input type="text" name="keyword" class="form-control" placeholder="Search your events"
+                        <input type="text" name="keyword" class="form-control" placeholder="Search for events"
                             value="{{ request('keyword') }}">
                         <button type="submit" class="btn btn-outline-secondary"><i class="bi bi-search"></i></button>
                     </div>
@@ -105,7 +105,7 @@
                         <select name="participation_status" class="form-select" onchange="this.form.submit()">
                             <option value="all" {{ request('participation_status') == 'all' ? 'selected' : '' }}>All Events
                             </option>
-                            <option selected value="participating"
+                            <option value="participating"
                                 {{ request('participation_status') == 'participating' ? 'selected' : '' }}>Events I'm
                                 Participating In</option>
                             <option value="available" {{ request('participation_status') == 'available' ? 'selected' : '' }}>
@@ -144,8 +144,8 @@
                 @else
                     @foreach ($ongoingEvents as $event)
                         <div class="col mb-4">
-                            <div class="card event-card shadow">
-                                <div class="event-image-container">
+                            <div class="card details-card shadow">
+                                <div class="image-container">
                                     <a target="_blank" href="{{ route('event.details', ['id' => $event->id]) }}">
                                         <img src="data:image/jpeg;base64,{{ base64_encode($event->poster) }}"
                                             class="card-img-top" alt="{{ $event->name }}">
@@ -165,16 +165,60 @@
                                     <p class="card-text">
                                         <small class="text-muted">Location: {{ $event->location }}</small>
                                     </p>
+                                    <p>
+                                        <small class="text-muted">{{ $event->participants_count }} Going |</small>
+                                        @if ($event->max_participants - $event->participants_count > 0)
+                                            <small
+                                                class="text-muted">{{ $event->max_participants - $event->participants_count }}
+                                                spots left</small>
+                                        @endif
+                                    </p>
                                 </div>
                                 @role('user')
                                     <div class="card-footer">
                                         <div class="d-grid gap-2 mt-1">
-                                            @if ($event->isUserRegistered(auth()->user()))
-                                                <button class="btn btn-danger btn-sm cancel-registration-button" type="button"
-                                                    data-event-id="{{ $event->id }}">Cancel Registration</button>
+                                            <!-- Check if the event has ended -->
+                                            @if (Carbon\Carbon::now()->greaterThanOrEqualTo(Carbon\Carbon::parse($event->date)->setTimeFromTimeString($event->end_time)))
+                                                <!-- If the event has ended, show "Event Ended" button -->
+                                                <button class="btn btn-secondary btn-sm" type="button" disabled>Event
+                                                    Ended</button>
+
+                                                <!-- Check if the user is registered -->
+                                            @elseif ($event->isUserRegistered(auth()->user()))
+                                                @php
+                                                    $participant = $event
+                                                        ->participants()
+                                                        ->where('user_id', auth()->user()->id)
+                                                        ->first();
+                                                @endphp
+
+                                                <!-- Check if the user is approved or pending approval -->
+                                                @if ($participant->isApproved == 1)
+                                                    <!-- If user is approved, show "Cancel Registration" button -->
+                                                    <button class="btn btn-danger btn-sm cancel-registration-button"
+                                                        type="button" data-event-id="{{ $event->id }}">
+                                                        Cancel Registration
+                                                    </button>
+                                                @elseif ($participant->isApproved == 0)
+                                                    <!-- If user is pending approval, show "Cancel Registration" and "Pending" label -->
+                                                    <button class="btn btn-secondary btn-sm" type="button"
+                                                        disabled>Pending</button>
+                                                    <button class="btn btn-danger btn-sm cancel-registration-button"
+                                                        type="button" data-event-id="{{ $event->id }}">
+                                                        Cancel Registration
+                                                    </button>
+                                                @endif
+                                                <!-- Check if the event is full -->
+                                            @elseif ($event->participants_count >= $event->max_participants)
+                                                <!-- If the event is full, show "Full" button -->
+                                                <button class="btn btn-secondary btn-sm" type="button" disabled>Full</button>
+
+                                                <!-- If none of the above, allow the user to register -->
                                             @else
                                                 <button class="btn btn-primary btn-sm register-button" type="button"
-                                                    data-event-id="{{ $event->id }}">Register</button>
+                                                    data-event-id="{{ $event->id }}">
+                                                    Register
+                                                </button>
                                             @endif
                                         </div>
                                     </div>
@@ -185,8 +229,22 @@
                                             <button class="btn btn-sm btn-primary flex-fill me-2 edit-event-button"
                                                 type="button" data-bs-toggle="modal" data-bs-target="#editEventModal"
                                                 data-event-id="{{ $event->id }}">Edit</button>
-                                            <button class="btn btn-sm btn-primary flex-fill me-2 attendance-button"
-                                                type="button" data-event-id="{{ $event->id }}">Attendance</button>
+
+                                            <div class="position-relative">
+                                                <button class="btn btn-sm btn-primary flex-fill me-2 attendance-button"
+                                                    type="button" data-event-id="{{ $event->id }}">
+                                                    Attendance
+                                                    <!-- Display the Badge if there are pending participants -->
+                                                    @if ($event->pending_participants_count > 0)
+                                                        <span
+                                                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                                                            style="left: 90% !important;">
+                                                            {{ $event->pending_participants_count }}
+                                                        </span>
+                                                    @endif
+                                                </button>
+                                            </div>
+
                                             <button class="btn btn-sm btn-danger flex-fill cancel-event-button" type="button"
                                                 data-event-id="{{ $event->id }}">Cancel</button>
                                         </div>
@@ -208,8 +266,8 @@
                 @else
                     @foreach ($completedEvents as $event)
                         <div class="col mb-4">
-                            <div class="card event-card shadow">
-                                <div class="event-image-container">
+                            <div class="card details-card shadow">
+                                <div class="image-container">
                                     <a target="_blank" href="{{ route('event.details', ['id' => $event->id]) }}">
                                         <img src="data:image/jpeg;base64,{{ base64_encode($event->poster) }}"
                                             class="card-img-top" alt="{{ $event->name }}">
@@ -229,16 +287,60 @@
                                     <p class="card-text">
                                         <small class="text-muted">Location: {{ $event->location }}</small>
                                     </p>
+                                    <p>
+                                        <small class="text-muted">{{ $event->participants_count }} Going |</small>
+                                        @if ($event->max_participants - $event->participants_count > 0)
+                                            <small
+                                                class="text-muted">{{ $event->max_participants - $event->participants_count }}
+                                                spots left</small>
+                                        @endif
+                                    </p>
                                 </div>
                                 @role('user')
                                     <div class="card-footer">
                                         <div class="d-grid gap-2 mt-1">
-                                            @if ($event->isUserRegistered(auth()->user()))
-                                                <button class="btn btn-danger btn-sm cancel-registration-button" type="button"
-                                                    data-event-id="{{ $event->id }}">Cancel Registration</button>
+                                            <!-- Check if the event has ended -->
+                                            @if (Carbon\Carbon::now()->greaterThanOrEqualTo(Carbon\Carbon::parse($event->date)->setTimeFromTimeString($event->end_time)))
+                                                <!-- If the event has ended, show "Event Ended" button -->
+                                                <button class="btn btn-secondary btn-sm" type="button" disabled>Event
+                                                    Ended</button>
+
+                                                <!-- Check if the user is registered -->
+                                            @elseif ($event->isUserRegistered(auth()->user()))
+                                                @php
+                                                    $participant = $event
+                                                        ->participants()
+                                                        ->where('user_id', auth()->user()->id)
+                                                        ->first();
+                                                @endphp
+
+                                                <!-- Check if the user is approved or pending approval -->
+                                                @if ($participant->isApproved == 1)
+                                                    <!-- If user is approved, show "Cancel Registration" button -->
+                                                    <button class="btn btn-danger btn-sm cancel-registration-button"
+                                                        type="button" data-event-id="{{ $event->id }}">
+                                                        Cancel Registration
+                                                    </button>
+                                                @elseif ($participant->isApproved == 0)
+                                                    <!-- If user is pending approval, show "Cancel Registration" and "Pending" label -->
+                                                    <button class="btn btn-secondary btn-sm" type="button"
+                                                        disabled>Pending</button>
+                                                    <button class="btn btn-danger btn-sm cancel-registration-button"
+                                                        type="button" data-event-id="{{ $event->id }}">
+                                                        Cancel Registration
+                                                    </button>
+                                                @endif
+                                                <!-- Check if the event is full -->
+                                            @elseif ($event->participants_count >= $event->max_participants)
+                                                <!-- If the event is full, show "Full" button -->
+                                                <button class="btn btn-secondary btn-sm" type="button" disabled>Full</button>
+
+                                                <!-- If none of the above, allow the user to register -->
                                             @else
                                                 <button class="btn btn-primary btn-sm register-button" type="button"
-                                                    data-event-id="{{ $event->id }}">Register</button>
+                                                    data-event-id="{{ $event->id }}">
+                                                    Register
+                                                </button>
                                             @endif
                                         </div>
                                     </div>
@@ -249,8 +351,22 @@
                                             <button class="btn btn-sm btn-primary flex-fill me-2 edit-event-button"
                                                 type="button" data-bs-toggle="modal" data-bs-target="#editEventModal"
                                                 data-event-id="{{ $event->id }}">Edit</button>
-                                            <button class="btn btn-sm btn-primary flex-fill me-2 attendance-button"
-                                                type="button" data-event-id="{{ $event->id }}">Attendance</button>
+
+                                            <div class="position-relative">
+                                                <button class="btn btn-sm btn-primary flex-fill me-2 attendance-button"
+                                                    type="button" data-event-id="{{ $event->id }}">
+                                                    Attendance
+                                                    <!-- Display the Badge if there are pending participants -->
+                                                    @if ($event->pending_participants_count > 0)
+                                                        <span
+                                                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                                                            style="left: 90% !important;">
+                                                            {{ $event->pending_participants_count }}
+                                                        </span>
+                                                    @endif
+                                                </button>
+                                            </div>
+
                                             <button class="btn btn-sm btn-danger flex-fill cancel-event-button" type="button"
                                                 data-event-id="{{ $event->id }}">Cancel</button>
                                         </div>
@@ -289,7 +405,6 @@
                                 <img id="posterPreview" src="" alt="Poster Preview"
                                     style="display: none; max-width: 100%; height: auto; border-radius: 10px;">
                             </div>
-                            <div class="invalid-feedback">Please upload a valid image.</div>
                         </div>
                         <div class="mb-3">
                             <label for="eventDescription" class="form-label">Event Description</label>
@@ -343,12 +458,36 @@
                             </select>
                         </div>
                         <div class="mb-3">
+                            <label for="maxParticipants" class="form-label">Max Participants</label>
+                            <input type="number" class="form-control" id="maxParticipants" name="max_participants"
+                                min="0" required>
+                        </div>
+                        <!-- Theme Selector -->
+                        <div class="mb-3">
                             <label for="eventTheme" class="form-label">Theme</label>
                             <select class="form-select" id="eventTheme" name="theme" required>
-                                <option value="Light">Light</option>
-                                <option value="Dark">Dark</option>
+                                <option value="Light">Light Animated</option>
+                                <option value="Dark">Dark Animated</option>
+                                <option value="Minimal">Minimal</option>
                             </select>
                         </div>
+
+                        <!-- Color Picker for Minimal theme -->
+                        <div class="mb-3" id="addColorPickerContainer">
+                            <label for="backgroundColor" class="form-label">Background Color</label>
+                            <input type="color" class="form-control" id="backgroundColor" name="background_color"
+                                value="#ffffff">
+                            <small class="form-text text-muted">Choose if theme is Minimal</small>
+                        </div>
+
+                        <!-- Text Color Picker for Minimal theme -->
+                        <div class="mb-3" id="addTextColorPickerContainer">
+                            <label for="textColor" class="form-label">Text Color</label>
+                            <input type="color" class="form-control" id="textColor" name="text_color"
+                                value="#000000">
+                            <small class="form-text text-muted">Choose if theme is Minimal</small>
+                        </div>
+
                         <div class="d-flex justify-content-end">
                             <button type="submit" class="btn btn-primary">Create Event</button>
                         </div>
@@ -382,7 +521,6 @@
                                 <img id="editPosterPreview" src="" alt="Poster Preview"
                                     style="display: none; max-width: 100%; height: auto; border-radius: 10px;">
                             </div>
-                            <div class="invalid-feedback">Please upload a valid image.</div>
                         </div>
                         <div class="mb-3">
                             <label for="editEventDescription" class="form-label">Event Description</label>
@@ -423,12 +561,35 @@
                             </select>
                         </div>
                         <div class="mb-3">
+                            <label for="editMaxParticipants" class="form-label">Max Participants</label>
+                            <input type="number" class="form-control" id="editMaxParticipants" name="max_participants"
+                                min="0" required>
+                        </div>
+                        <div class="mb-3">
                             <label for="editEventTheme" class="form-label">Theme</label>
                             <select class="form-select" id="editEventTheme" name="theme" required>
-                                <option value="Light">Light</option>
-                                <option value="Dark">Dark</option>
+                                <option value="Light">Light Animated</option>
+                                <option value="Dark">Dark Animated</option>
+                                <option value="Minimal">Minimal</option>
                             </select>
                         </div>
+
+                        <!-- Color Picker for Minimal theme -->
+                        <div class="mb-3" id="editColorPickerContainer">
+                            <label for="editBackgroundColor" class="form-label">Background Color</label>
+                            <input type="color" class="form-control" id="editBackgroundColor" name="background_color"
+                                value="#ffffff">
+                            <small class="form-text text-muted">Choose if theme is Minimal</small>
+                        </div>
+
+                        <!-- Text Color Picker for Minimal theme -->
+                        <div class="mb-3" id="editTextColorPickerContainer">
+                            <label for="editTextColor" class="form-label">Text Color</label>
+                            <input type="color" class="form-control" id="editTextColor" name="text_color"
+                                value="#000000">
+                            <small class="form-text text-muted">Choose if theme is Minimal</small>
+                        </div>
+
                         <div class="d-flex justify-content-end">
                             <button type="submit" class="btn btn-primary">Save Changes</button>
                         </div>
@@ -449,6 +610,27 @@
                 <div class="modal-body">
                     <div class="container-fluid">
                         <div class="row">
+                            <div class="col text-end">
+                                <!-- Participant Approval Button with Badge -->
+                                <div class="dropdown position-relative">
+                                    <button class="btn btn-primary mb-3 dropdown-toggle" type="button"
+                                        id="participantApprovalButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Participant Approval
+                                        <!-- The Badge to Show Pending Participants Count -->
+                                        <span id="pendingParticipantBadge"
+                                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                                            style="left: 80%; display: none;">
+                                            0
+                                        </span>
+                                    </button>
+                                    <ul id="pendingParticipantsList" class="dropdown-menu dropdown-menu-end py-0"
+                                        aria-labelledby="participantApprovalButton">
+                                        <!-- Pending Participants will be listed here -->
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
                             <div class="table-responsive">
                                 <table id="attendanceTable" class="display compact table table-striped"
                                     style="width:100%">
@@ -464,7 +646,6 @@
             </div>
         </div>
     </div>
-
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -663,7 +844,7 @@
             });
 
             // Reset validation feedback and form fields when modals are hidden
-            $('#addMemberModal, #editMemberModal, #createEventModal, #editEventModal').on('hidden.bs.modal',
+            $('#createEventModal, #editEventModal').on('hidden.bs.modal',
                 function() {
                     $(this).find('form')[0].reset(); // Reset form fields
                     $(this).find('form').removeClass('was-validated'); // Remove validation styles
@@ -674,6 +855,60 @@
             const posterPreview = document.getElementById('posterPreview');
             const editPosterInput = document.getElementById('editPoster');
             const editPosterPreview = document.getElementById('editPosterPreview');
+
+            // Common validation for poster images (for both add and edit)
+            function handleFileInputChange(inputId, previewId) {
+                const fileInput = document.getElementById(inputId);
+                const previewImage = document.getElementById(previewId);
+                const maxSizeInMB = 10; // 10 MB
+                const maxSizeInBytes = maxSizeInMB * 1024 * 1024; // Convert MB to bytes
+                const allowedFormats = ['image/jpeg', 'image/png', 'image/jpg'];
+
+                fileInput.addEventListener('change', function(event) {
+                    const file = event.target.files[0];
+
+                    if (file) {
+                        // Check file size
+                        if (file.size > maxSizeInBytes) {
+                            // If file is too large, show SweetAlert
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'File too large',
+                                text: `The selected file exceeds the ${maxSizeInMB}MB limit.`,
+                            });
+                            fileInput.value = ''; // Clear the file input
+                            previewImage.style.display = 'none'; // Hide the preview
+                        }
+                        // Check file type
+                        else if (!allowedFormats.includes(file.type)) {
+                            // If file type is invalid, show SweetAlert
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Invalid file format',
+                                text: 'Please upload a valid image (JPEG, PNG, JPG).',
+                            });
+                            fileInput.value = ''; // Clear the file input
+                            previewImage.style.display = 'none'; // Hide the preview
+                        } else {
+                            // If file is valid, show the preview
+                            const reader = new FileReader();
+                            reader.onload = function(e) {
+                                previewImage.src = e.target.result;
+                                previewImage.style.display = 'block'; // Show the preview
+                            };
+                            reader.readAsDataURL(file);
+                        }
+                    } else {
+                        // If no file selected, hide the preview
+                        previewImage.style.display = 'none';
+                    }
+                });
+            }
+
+            // Initialize the file input and preview handlers for both 'add' and 'edit'
+            handleFileInputChange('editPoster', 'editPosterPreview');
+            handleFileInputChange('poster', 'posterPreview');
+
 
             posterInput.addEventListener('change', function() {
                 const file = posterInput.files[0];
@@ -711,6 +946,14 @@
                 plugins: 'lists link image table code',
                 toolbar: 'h1 h2 | undo redo | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image',
                 menubar: false,
+            });
+
+            document.addEventListener('focusin', (e) => {
+                if (e.target.closest(
+                        ".tox-tinymce, .tox-tinymce-aux, .moxman-window, .tam-assetmanager-root") !==
+                    null) {
+                    e.stopImmediatePropagation();
+                }
             });
 
             function createEvent() {
@@ -795,8 +1038,67 @@
                     const attendanceModal = new bootstrap.Modal(document.getElementById(
                         'eventAttendanceModal'));
                     attendanceModal.show();
+
+                    // Fetch pending participants directly after opening the modal
+                    getPendingParticipant(eventId);
                 });
             });
+
+            // Function to fetch pending participants
+            function getPendingParticipant(eventId) {
+                $.ajax({
+                    url: `/iclub/${eventId}/pendingParticipant`, // Your route for fetching pending participants
+                    type: "GET",
+                    success: function(response) {
+                        let participantsList = response.participants;
+                        let pendingParticipantsList = $('#pendingParticipantsList');
+                        let pendingParticipantBadge = $('#pendingParticipantBadge');
+
+                        // Clear any existing items
+                        pendingParticipantsList.empty();
+
+                        // Check if there are any pending participants
+                        if (participantsList.length > 0) {
+                            // Update the badge with the count of pending participants
+                            pendingParticipantBadge.text(participantsList.length);
+                            pendingParticipantBadge
+                                .show(); // Show the badge if there are pending participants
+
+                            // Loop through the list of pending participants and create list items
+                            participantsList.forEach(function(participant) {
+                                let listItem = `
+                    <li id="participant-${participant.participant_id}" class="dropdown-item d-flex justify-content-between align-items-center">
+                        <span>${participant.name} (Student ID: ${participant.student_id})</span>
+                        <div>
+                            <!-- Approve Button with Tick Icon -->
+                            <button class="btn btn-outline-success btn me-2 border-0" title="Approve" onclick="approveParticipant(${participant.participant_id}, event)">
+                                <i class="bi bi-check-lg"></i>
+                            </button>
+                            <!-- Reject Button with Cross Icon -->
+                            <button class="btn btn-outline-danger btn border-0" title="Reject" onclick="rejectParticipant(${participant.participant_id}, event)">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                    </li>
+                `;
+                                pendingParticipantsList.append(listItem);
+                            });
+                        } else {
+                            // If no pending participants, display a message
+                            let noParticipantsItem = `
+                    <li class="dropdown-item text-center">
+                        No participants waiting for approval.
+                    </li>
+                `;
+                            pendingParticipantsList.append(noParticipantsItem);
+                            pendingParticipantBadge.hide();
+                        }
+                    },
+                    error: function(error) {
+                        console.error('Error fetching pending participants:', error);
+                    }
+                });
+            }
 
             // Event listener for checkboxes
             $('#attendanceTable').on('change', '.attendance-checkbox', function() {
@@ -812,7 +1114,7 @@
                     },
                     data: {
                         participant_id: participantId,
-                        present: isPresent
+                        isPresent: isPresent
                     },
                     success: function(response) {
 
@@ -855,6 +1157,15 @@
                         document.getElementById('editStartTime').value = event.start_time;
                         document.getElementById('editEndTime').value = event.end_time;
                         document.getElementById('editEventTheme').value = event.theme;
+                        document.getElementById('editMaxParticipants').value = event.max_participants;
+
+                        // Set the background color and text color
+                        if (event.background_color) {
+                            document.getElementById('editBackgroundColor').value = event.background_color;
+                        }
+                        if (event.text_color) {
+                            document.getElementById('editTextColor').value = event.text_color;
+                        }
 
                         // TinyMCE content population
                         const editor = tinymce.get('editEventDescription');
@@ -885,6 +1196,7 @@
                 });
         }
 
+
         // Function to initialize or refresh the DataTable
         function setupAttendanceTable(eventId) {
             // Destroy any existing instance of DataTable to reinitialize it
@@ -905,7 +1217,7 @@
                         "data": "name"
                     },
                     {
-                        "data": "present",
+                        "data": "isPresent",
                         "orderable": false,
                         "render": function(data, type, row) {
                             return `
@@ -919,6 +1231,136 @@
                 "order": [
                     [0, "asc"]
                 ]
+            });
+        }
+
+        // Function to approve a participant
+        function approveParticipant(participantId, event) {
+            event.stopPropagation(); // Prevent dropdown from closing
+
+            // Add debug log to verify the ID
+            console.log('Approving participant:', participantId);
+
+            // Ensure participantId is valid
+            if (!participantId) {
+                console.error('Invalid participant ID');
+                return;
+            }
+
+            $.ajax({
+                url: `/iclub/pendingParticipant/${participantId}/approve`,
+                type: 'PUT',
+                data: {
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    // Remove the approved participant from the pending list in the dropdown
+                    $(`#participant-${participantId}`).remove();
+
+                    // Update the badge count
+                    let currentCount = parseInt($('#pendingParticipantBadge').text());
+                    let newCount = currentCount - 1;
+
+                    if (newCount > 0) {
+                        $('#pendingParticipantBadge').text(newCount);
+                    } else {
+                        // Hide the badge if no pending participants are left
+                        $('#pendingParticipantBadge').hide();
+
+                        // Show "No participants waiting for approval" message if list is empty
+                        let noParticipantsItem = `
+                    <li class="dropdown-item text-center">
+                        No participants waiting for approval.
+                    </li>
+                `;
+                        $('#pendingParticipantsList').append(noParticipantsItem);
+                    }
+
+                    if ($.fn.DataTable.isDataTable('#attendanceTable')) {
+                        $('#attendanceTable').DataTable().ajax.reload(null,
+                        false); // Reload table without resetting pagination
+                    }
+
+                    // Check if there are any items left in the pending list
+                    if ($('#pendingParticipantsList li').length === 0) {
+                        let noParticipantsItem = `
+                    <li class="dropdown-item text-center">
+                        No participants waiting for approval.
+                    </li>
+                `;
+                        $('#pendingParticipantsList').append(noParticipantsItem);
+                        $('#pendingParticipantBadge').hide();
+                    }
+                },
+                error: function(err) {
+                    console.error('Error:', err);
+                    Swal.fire('Error!', 'An error occurred while approving the participant.', 'error');
+                }
+            });
+        }
+
+        // Function to reject a participant
+        function rejectParticipant(participantId, event) {
+            event.stopPropagation(); // Prevent dropdown from closing
+
+            // Show a confirmation dialog using Swal
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "Do you really want to reject this participant?",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, reject it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Proceed with the rejection if confirmed
+                    $.ajax({
+                        url: `/iclub/pendingParticipant/${participantId}/reject`,
+                        type: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        success: function(result) {
+                            // Remove the rejected participant from the pending list in the dropdown
+                            $(`#participant-${participantId}`).remove();
+
+                            // Update the badge count
+                            let currentCount = parseInt($('#pendingParticipantBadge').text());
+                            let newCount = currentCount - 1;
+
+                            if (newCount > 0) {
+                                $('#pendingParticipantBadge').text(newCount);
+                            } else {
+                                // Hide the badge if no pending participants are left
+                                $('#pendingParticipantBadge').hide();
+
+                                // Show "No participants waiting for approval" message if list is empty
+                                let noParticipantsItem = `
+                            <li class="dropdown-item text-center">
+                                No participants waiting for approval.
+                            </li>
+                        `;
+                                $('#pendingParticipantsList').append(noParticipantsItem);
+                            }
+
+                            // Additional check in case all participants are removed
+                            if ($('#pendingParticipantsList li').length === 0) {
+                                let noParticipantsItem = `
+                            <li class="dropdown-item text-center">
+                                No participants waiting for approval.
+                            </li>
+                        `;
+                                $('#pendingParticipantsList').append(noParticipantsItem);
+                                $('#pendingParticipantBadge').hide();
+                            }
+                        },
+                        error: function(err) {
+                            Swal.fire('Error!', 'An error occurred while rejecting the participant.',
+                                'error');
+                        }
+                    });
+                }
             });
         }
     </script>

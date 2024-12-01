@@ -12,11 +12,26 @@ class LoginController extends Controller
     use AuthenticatesUsers;
 
     /**
-     * Where to redirect users after login.
+     * Get the path the user should be redirected to after login.
      *
-     * @var string
+     * @return string
      */
-    protected $redirectTo = '/iclub/dashboard';
+    public function redirectTo()
+    {
+        /** @var \App\Models\User */
+        $user = auth()->user();
+
+        if ($user->hasRole('admin')) {
+            return route('iclub.user.page');
+        } elseif ($user->hasRole('club_manager')) {
+            return route('iclub.clubMember.page');
+        } elseif ($user->hasRole('user')) {
+            return route('iclub.club.page');
+        }
+
+        return '/iclub/dashboard'; // Default fallback
+    }
+
 
     /**
      * Create a new controller instance.
@@ -37,9 +52,19 @@ class LoginController extends Controller
     public function showLoginForm()
     {
         if (auth()->check()) {
-            return redirect()->route('iclub.dashboard.page');
+            /** @var \App\Models\User */
+            $user = auth()->user();
+
+            // Redirect based on the user's role
+            if ($user->hasRole('admin')) {
+                return redirect()->route('iclub.user.page');
+            } elseif ($user->hasRole('club_manager')) {
+                return redirect()->route('iclub.clubMember.page');
+            } elseif ($user->hasRole('user')) {
+                return redirect()->route('iclub.club.page');
+            }
         }
-        
+
         return view('webplatform.auth.login');
     }
 
