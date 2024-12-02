@@ -167,7 +167,7 @@
                             </div>
                             <div class="row">
                                 @foreach ($categoryClubs as $club)
-                                    <div class="col-md-6 col-xl-3 my-4">
+                                    <div class="col-md-6 col-lg-4 col-xl-3 my-4">
                                         <div class="card h-100 text-center bg-transparent">
                                             <h5 class="card-title pt-3"><a
                                                     href="{{ route('club.details', ['id' => $club->id]) }}"
@@ -205,7 +205,7 @@
                     @else
                         <div class="row">
                             @foreach ($thisMonthEvents as $event)
-                                <div class="col-md-6 col-xl-3 mb-4">
+                                <div class="col-md-6 col-xl-4 mb-4">
                                     <div class="card border-0 h-100 bg-transparent text-white">
                                         <a href="{{ route('event.details', ['id' => $event->id]) }}" target="_blank">
                                             <img src="data:image/jpeg;base64,{{ base64_encode($event->poster) }}"
@@ -242,7 +242,7 @@
                     @else
                         <div class="row">
                             @foreach ($futureEvents as $event)
-                                <div class="col-md-6 col-xl-3 mb-4">
+                                <div class="col-md-6 col-xl-4 mb-4">
                                     <div class="card h-100 border-0 bg-transparent text-white">
                                         <a href="{{ route('event.details', ['id' => $event->id]) }}" target="_blank">
                                             <img src="data:image/jpeg;base64,{{ base64_encode($event->poster) }}"

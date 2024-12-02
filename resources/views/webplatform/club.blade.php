@@ -126,10 +126,10 @@
             @if ($joinStatus === 'all' || $joinStatus === 'joined')
                 <div id="joinedClubsSection" class="mt-3">
                     <h2 class="fw-bold">Joined Clubs</h2>
-                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-5 mt-3">
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 mt-3">
                         @php
                             $joinedClubs = $clubs->filter(function ($club) {
-                                return $club->members->contains('id', auth()->id());
+                                return $club->members->contains('user_id', auth()->id());
                             });
                         @endphp
 
@@ -138,7 +138,7 @@
                         @else
                             @foreach ($joinedClubs as $club)
                                 <div class="col mb-4">
-                                    <div class="card details-card shadow">
+                                    <div class="card details-card shadow" style="min-height: 375px">
                                         <div class="image-container">
                                             <a target="_blank" href="{{ route('club.details', ['id' => $club->id]) }}">
                                                 <img src="data:image/jpeg;base64,{{ base64_encode($club->logo) }}"
@@ -200,10 +200,10 @@
         @if ($joinStatus === 'all' || $joinStatus === 'available')
             <div id="availableClubsSection" class="mt-3">
                 <h2 class="fw-bold">Available Clubs</h2>
-                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-5 mt-3">
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 mt-3">
                     @php
                         $availableClubs = $clubs->filter(function ($club) {
-                            return !$club->members->contains('id', auth()->id());
+                            return !$club->members->contains('user_id', auth()->id());
                         });
                     @endphp
 
@@ -212,7 +212,7 @@
                     @else
                         @foreach ($availableClubs as $club)
                             <div class="col mb-4">
-                                <div class="card details-card shadow">
+                                <div class="card details-card shadow" style="min-height: 375px">
                                     <div class="image-container">
                                         <a target="_blank" href="{{ route('club.details', ['id' => $club->id]) }}">
                                             <img src="data:image/jpeg;base64,{{ base64_encode($club->logo) }}"

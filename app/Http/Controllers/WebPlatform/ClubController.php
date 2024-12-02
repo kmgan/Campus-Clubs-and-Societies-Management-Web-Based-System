@@ -33,7 +33,11 @@ class ClubController extends Controller
         $user = auth()->user();
 
         // Start building the query
-        $query = Club::query();
+        $query = Club::query()
+            ->with('members') // Eager load members to prevent N+1 queries
+            ->withCount(['members as members_count' => function ($q) {
+                $q->where('isApproved', 1);
+            }]);
 
         if ($user->hasRole('user')) {
             if ($joinStatus == 'joined') {

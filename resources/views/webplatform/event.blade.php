@@ -138,7 +138,7 @@
         {{-- Upcoming Events Section --}}
         <div id="ongoingEventsSection" class="mt-3">
             <h2 class="fw-bold">Upcoming Events</h2>
-            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-5 mt-3">
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 mt-3">
                 @if ($ongoingEvents->isEmpty())
                     <p>No upcoming events found.</p>
                 @else
@@ -260,7 +260,7 @@
         {{-- Completed Events Section --}}
         <div id="completedEventsSection" class="mt-3">
             <h2 class="fw-bold">Completed Events</h2>
-            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-5 mt-3">
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 mt-3">
                 @if ($completedEvents->isEmpty())
                     <p>No completed events found.</p>
                 @else

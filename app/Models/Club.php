@@ -45,12 +45,8 @@ class Club extends Model
 
     public function members()
     {
-        return $this->belongsToMany(User::class, 'club_member', 'club_id', 'user_id')
-            ->withPivot('role') // Include pivot fields like 'role' if needed
-            ->withPivot('isApproved')
-            ->withTimestamps(); // Include timestamps if your pivot table has them
+        return $this->hasMany(ClubMember::class, 'club_id', 'id');
     }
-
 
     public function club_category()
     {
