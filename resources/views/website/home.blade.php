@@ -158,29 +158,30 @@
                         <p>No clubs found.</p>
                     @else
                         @foreach ($clubs as $categoryId => $categoryClubs)
-                            <div class="row">
+                            <div class="row mb-3">
                                 <p>
                                     <span class="border px-4 py-1 fw-bold club-category-bg rounded-3 nowrap">
                                         {{ $categories->firstWhere('id', $categoryId)->name }}
                                     </span>
                                 </p>
                             </div>
-                            <div class="row">
+                            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 row-cols-xxl-5 g-4">
                                 @foreach ($categoryClubs as $club)
-                                    <div class="col-md-6 col-lg-4 col-xl-3 my-4">
-                                        <div class="card h-100 text-center bg-transparent">
-                                            <h5 class="card-title pt-3"><a
-                                                    href="{{ route('club.details', ['id' => $club->id]) }}"
-                                                    target="_blank"><img
-                                                        src="data:image/jpeg;base64,{{ base64_encode($club->logo) }}"
-                                                        alt="{{ $club->name }}" class="card-img-top mx-auto"
-                                                        style="max-width: 150px; height: 150px; object-fit: contain;"></a>
-                                                <div class="card-body">
-                                                    <h5 class="card-title"><a
-                                                            href="{{ route('club.details', ['id' => $club->id]) }}"
-                                                            target="_blank">
-                                                            {{ $club->name }} ></a></h5>
-                                                </div>
+                                    <div class="col">
+                                        <div class="card h-100 text-center bg-transparent px-0">
+                                            <a href="{{ route('club.details', ['id' => $club->id]) }}" target="_blank">
+                                                <img src="data:image/jpeg;base64,{{ base64_encode($club->logo) }}"
+                                                    alt="{{ $club->name }}" class="card-img-top mx-auto"
+                                                    style="max-width: 150px; height: 150px; object-fit: contain;">
+                                            </a>
+                                            <div class="card-body">
+                                                <h6 class="card-title">
+                                                    <a href="{{ route('club.details', ['id' => $club->id]) }}"
+                                                        target="_blank">
+                                                        {{ $club->name }} >
+                                                    </a>
+                                                </h6>
+                                            </div>
                                         </div>
                                     </div>
                                 @endforeach
@@ -205,12 +206,12 @@
                     @else
                         <div class="row">
                             @foreach ($thisMonthEvents as $event)
-                                <div class="col-md-6 col-xl-4 mb-4">
+                                <div class="col-md-6 col-lg-4 col-xxl-3 mb-4">
                                     <div class="card border-0 h-100 bg-transparent text-white">
                                         <a href="{{ route('event.details', ['id' => $event->id]) }}" target="_blank">
                                             <img src="data:image/jpeg;base64,{{ base64_encode($event->poster) }}"
-                                                alt="{{ $event->name }}" class="card-img-top img-fluid"
-                                                style="height: 350px; object-fit: cover; width: 100%;">
+                                                alt="{{ $event->name }}" class="card-img-top"
+                                                style="height: 350px; object-fit: cover;">
                                         </a>
                                         <div class="card-body">
                                             <p class="card-text text-white-50 fw-bold">{{ $event->club->name }}</p>
@@ -242,12 +243,12 @@
                     @else
                         <div class="row">
                             @foreach ($futureEvents as $event)
-                                <div class="col-md-6 col-xl-4 mb-4">
+                                <div class="col-md-6 col-lg-4 col-xxl-3 mb-4">
                                     <div class="card h-100 border-0 bg-transparent text-white">
                                         <a href="{{ route('event.details', ['id' => $event->id]) }}" target="_blank">
                                             <img src="data:image/jpeg;base64,{{ base64_encode($event->poster) }}"
-                                                alt="{{ $event->name }}" class="card-img-top img-fluid"
-                                                style="height: 350px; object-fit: cover; width: 100%;">
+                                                alt="{{ $event->name }}" class="card-img-top"
+                                                style="height: 350px; object-fit: cover;">
                                         </a>
                                         <div class="card-body">
                                             <p class="card-text text-white-50 fw-bold">{{ $event->club->name }}</p>

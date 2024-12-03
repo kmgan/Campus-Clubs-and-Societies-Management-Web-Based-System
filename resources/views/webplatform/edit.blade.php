@@ -29,7 +29,7 @@
     <h1 class="fw-bold">Edit Web Content</h1>
     <hr>
     <div class="container-fluid">
-        <form id="editWebContentForm" enctype="multipart/form-data">
+        <form id="editWebContentForm" class="needs-validation" enctype="multipart/form-data" novalidate>
             <div class="row">
                 <div class="col-md-6">
                     <h2>Logo</h2>
@@ -123,8 +123,8 @@
                     <h2>Contact Us Section</h2>
                     <div class="mb-3">
                         <label for="clubEmail" class="form-label">Email</label>
-                        <input type="email" id="clubEmail" name="email" class="form-control"
-                            value="{{ $club->email }}">
+                        <input type="email" pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" id="clubEmail"
+                            name="email" class="form-control" value="{{ $club->email }}">
                     </div>
                     <div class="mb-3">
                         <label for="clubFacebook" class="form-label">Facebook URL</label>
@@ -146,7 +146,7 @@
 
             <div class="d-flex justify-content-end">
                 <button type="button" class="btn btn-primary me-2" id="resetContentButton">Reset</button>
-                <button type="button" class="btn btn-primary" id="saveContentButton">Save</button>
+                <button type="submit" class="btn btn-primary" id="saveContentButton">Save</button>
             </div>
         </form>
     </div>
@@ -213,23 +213,48 @@
             toggleAddActivityButton();
             toggleAddGalleryImageButton();
 
-            // Add new activity logic
+            // Function to dynamically set `required` attributes based on field values
+            function handleActivityFieldValidation(container) {
+                const inputs = container.querySelectorAll('input, textarea'); // Select all inputs and textareas
+
+                inputs.forEach(input => {
+                    input.addEventListener('input', () => {
+                        const isAnyFieldFilled = Array.from(inputs).some(field => field.value
+                            .trim() !== '' || (field.type === 'file' && field.files.length > 0));
+                        inputs.forEach(field => {
+                            field.required =
+                                isAnyFieldFilled; // Set required if any field is filled
+                        });
+                    });
+                });
+            }
+
+            // Apply validation to existing activities
+            document.querySelectorAll('.activity-container').forEach(container => {
+                handleActivityFieldValidation(container);
+            });
+
+            // Apply validation for new activities
             addActivityButton.addEventListener('click', function() {
                 const activityId = `new-${Date.now()}`;
                 const activityHTML = `
-                <div class="activity-container" data-activity-id="${activityId}">
-                    <div class="d-flex justify-content-end">
-                        <button type="button" class="btn btn-danger mt-2 remove-activity-button"><i class="bi bi-x-lg"></i> Remove</button>
-                    </div>
-                    <div class="mb-3">
-                        <img src="" alt="Activity Image" class="activity-img-preview" style="display: none;">
-                    </div>
-                    <input type="file" name="activities[${activityId}][image]" class="form-control activity-img-input" accept="image/*">
-                    <input type="text" name="activities[${activityId}][name]" class="form-control mt-2" placeholder="Activity Name">
-                    <textarea name="activities[${activityId}][description]" class="form-control mt-2" placeholder="Activity Description"></textarea>
-                </div>
-            `;
+    <div class="activity-container" data-activity-id="${activityId}">
+        <div class="d-flex justify-content-end">
+            <button type="button" class="btn btn-danger mt-2 remove-activity-button"><i class="bi bi-x-lg"></i> Remove</button>
+        </div>
+        <div class="mb-3">
+            <img src="" alt="Activity Image" class="activity-img-preview" style="display: none;">
+        </div>
+        <input type="file" name="activities[${activityId}][image]" class="form-control activity-img-input" accept="image/*">
+        <input type="text" name="activities[${activityId}][name]" class="form-control mt-2" placeholder="Activity Name">
+        <textarea name="activities[${activityId}][description]" class="form-control mt-2" placeholder="Activity Description"></textarea>
+    </div>
+    `;
                 activitiesContainer.insertAdjacentHTML('beforeend', activityHTML);
+
+                // Apply validation logic to the new activity container
+                const newContainer = activitiesContainer.lastElementChild;
+                handleActivityFieldValidation(newContainer);
                 toggleAddActivityButton();
             });
 
@@ -476,50 +501,30 @@
 
             // Save button logic
             saveButton.addEventListener('click', function() {
+                const form = document.getElementById('editWebContentForm');
+
+                // Manually trigger form validation
+                if (!form.checkValidity()) {
+                    form.classList.add('was-validated'); // Apply validation feedback
+
+                    // Find the first invalid field
+                    const firstInvalidField = form.querySelector(':invalid');
+                    if (firstInvalidField) {
+                        // Focus on the first invalid field
+                        firstInvalidField.focus();
+
+                        // Smoothly scroll to the first invalid field
+                        firstInvalidField.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+                    }
+                    return; // Prevent further execution
+                }
+
                 const activities = activitiesContainer.querySelectorAll('.activity-container');
                 const galleryImages = galleryContainer.querySelectorAll('.gallery-image-container');
                 const email = emailField.value.trim();
-
-                // Email validation (only if email is provided)
-                if (email && !isValidEmail(email)) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Invalid Email',
-                        text: 'Please enter a valid email address.',
-                    });
-                    return; // Prevent form submission
-                }
-
-                // Validate activities - Ensure that if one field is filled, the others are filled
-                let validActivities = true; // Track validity of all activities
-                activities.forEach((activity) => {
-                    const imageInput = activity.querySelector('.activity-img-input');
-                    const nameInput = activity.querySelector('input[name*="[name]"]');
-                    const descriptionInput = activity.querySelector(
-                        'textarea[name*="[description]"]');
-                    const activityImage = activity.querySelector(
-                        '.activity-img-preview'); // The image element
-
-                    const imageFileSelected = imageInput.files.length > 0 || activityImage.src !==
-                        ""; // If the image is already there
-                    const nameFilled = nameInput.value.trim() !== '';
-                    const descriptionFilled = descriptionInput.value.trim() !== '';
-
-                    // Check if one field is filled but others are not
-                    if ((imageFileSelected || nameFilled || descriptionFilled) &&
-                        (!imageFileSelected || !nameFilled || !descriptionFilled)) {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Incomplete Activity',
-                            text: 'If one field (image, name, or description) within an activity is filled, all must be filled.',
-                        });
-                        validActivities = false;
-                    }
-                });
-
-                if (!validActivities) {
-                    return; // Stop form submission if validation fails
-                }
 
                 // Remove empty activities
                 activities.forEach((activity) => {
@@ -549,7 +554,7 @@
                 });
 
                 // Re-create FormData after removing empty activities and gallery images
-                const formData = new FormData(document.getElementById('editWebContentForm'));
+                const formData = new FormData(form);
 
                 // Append deleted activities to FormData
                 if (deletedActivities.length > 0) {
@@ -589,13 +594,13 @@
                             icon: data.success ? 'success' : 'error',
                             title: data.success ? 'Saved!' : 'Error!',
                             text: data.message || 'Content updated successfully.',
+                        }).then(() => {
+                            if (data.success) {
+                                deletedActivities.length = 0;
+                                deletedGalleryImages.length = 0;
+                                location.reload();
+                            }
                         });
-
-                        // Clear deleted arrays on success
-                        if (data.success) {
-                            deletedActivities.length = 0;
-                            deletedGalleryImages.length = 0;
-                        }
                     })
                     .catch(error => {
                         Swal.fire({

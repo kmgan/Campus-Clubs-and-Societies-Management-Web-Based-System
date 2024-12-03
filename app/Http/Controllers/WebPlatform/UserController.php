@@ -55,7 +55,21 @@ class UserController extends Controller
 
     public function getUser($id)
     {
-        $user = User::find($id);
+        $user = User::select([
+            'users.id',
+            'users.name',
+            'users.email',
+            'users.student_id',
+            'users.personal_email',
+            'users.phone',
+            'users.course_of_study',
+            'users.club_id',
+            'roles.name as role'
+        ])
+            ->leftJoin('model_has_roles', 'users.id', '=', 'model_has_roles.model_id')
+            ->leftJoin('roles', 'model_has_roles.role_id', '=', 'roles.id')
+            ->where('users.id', $id)
+            ->first();
 
         if (!$user) {
             return response()->json(['message' => 'User not found'], 404);

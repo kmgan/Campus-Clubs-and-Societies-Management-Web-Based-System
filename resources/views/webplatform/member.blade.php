@@ -50,7 +50,14 @@
 
     <div class="container-fluid">
         <div class="row">
-            <div class="col text-end">
+            <div class="col text-end d-flex align-items-center justify-content-end">
+                <!-- Member Approval Switch -->
+                <div class="form-check form-switch me-3 mb-3">
+                    <input class="form-check-input" type="checkbox" role="switch" id="memberApprovalRequired"
+                        {{ $memberApprovalRequired ? 'checked' : '' }}>
+                    <label class="form-check-label" for="memberApprovalRequired">Approval Required</label>
+                </div>
+
                 <!-- Member Approval Button with Dropdown -->
                 <div class="dropdown position-relative">
                     <button class="btn btn-primary mb-3 dropdown-toggle" type="button" id="memberApprovalButton"
@@ -90,29 +97,28 @@
 
     <script>
         $(document).ready(function() {
-            $(document).ready(function() {
-                // Fetch pending members and populate the dropdown
-                $.ajax({
-                    url: "{{ route('iclub.pendingMembers.data') }}",
-                    type: "GET",
-                    success: function(response) {
-                        let membersList = response.members;
-                        let pendingMembersList = $('#pendingMembersList');
-                        let pendingApprovalBadge = $('#pendingApprovalBadge');
+            // Fetch pending members and populate the dropdown
+            $.ajax({
+                url: "{{ route('iclub.pendingMembers.data') }}",
+                type: "GET",
+                success: function(response) {
+                    let membersList = response.members;
+                    let pendingMembersList = $('#pendingMembersList');
+                    let pendingApprovalBadge = $('#pendingApprovalBadge');
 
-                        // Clear any existing items
-                        pendingMembersList.empty();
+                    // Clear any existing items
+                    pendingMembersList.empty();
 
-                        // Check if there are any pending members
-                        if (membersList.length > 0) {
-                            // Update the badge with the count of pending members
-                            pendingApprovalBadge.text(membersList.length);
-                            pendingApprovalBadge
-                                .show(); // Show the badge if there are pending members
+                    // Check if there are any pending members
+                    if (membersList.length > 0) {
+                        // Update the badge with the count of pending members
+                        pendingApprovalBadge.text(membersList.length);
+                        pendingApprovalBadge
+                            .show(); // Show the badge if there are pending members
 
-                            // Loop through the list of pending members and create list items
-                            membersList.forEach(function(member) {
-                                let listItem = `
+                        // Loop through the list of pending members and create list items
+                        membersList.forEach(function(member) {
+                            let listItem = `
                     <li id="member-${member.id}" class="dropdown-item d-flex justify-content-between align-items-center">
                         <span>${member.name} (Student ID: ${member.student_id})</span>
                         <div>
@@ -127,22 +133,21 @@
                         </div>
                     </li>
                     `;
-                                pendingMembersList.append(listItem);
-                            });
-                        } else {
-                            // If no pending members, display a message
-                            let noMembersItem = `
+                            pendingMembersList.append(listItem);
+                        });
+                    } else {
+                        // If no pending members, display a message
+                        let noMembersItem = `
                     <li class="dropdown-item text-center">
                         No members waiting for approval.
                     </li>
                 `;
-                            pendingMembersList.append(noMembersItem);
-                        }
-                    },
-                    error: function(error) {
-                        console.error('Error fetching pending members:', error);
+                        pendingMembersList.append(noMembersItem);
                     }
-                });
+                },
+                error: function(error) {
+                    console.error('Error fetching pending members:', error);
+                }
             });
 
 
@@ -242,6 +247,50 @@
             `;
         }
 
+        document.getElementById('memberApprovalRequired').addEventListener('change', function() {
+            const isChecked = this.checked;
+
+            // Prepare the data to send to the server
+            const data = {
+                memberApprovalRequired: isChecked ? 1 : 0 // Convert to boolean-like values for the database
+            };
+
+            // Make an AJAX request to update the database
+            fetch('/iclub/clubMember/updateApprovalSetting', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}' // Ensure you include the CSRF token for security
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: 'Approval setting updated successfully.'
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: result.message ||
+                                'An error occurred while updating the approval setting.'
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating approval setting:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Failed to update the approval setting.'
+                    });
+                });
+        });
+
         // Handle role change
         function changeRole(memberId, newRole) {
             $.ajax({
@@ -304,7 +353,7 @@
 
                         if ($.fn.DataTable.isDataTable('#memberTable')) {
                             $('#memberTable').DataTable().ajax.reload(null,
-                            false); // Reload table without resetting pagination
+                                false); // Reload table without resetting pagination
                         }
                     }
                 },

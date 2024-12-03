@@ -17,8 +17,8 @@ class EventController extends Controller
     public function showEventPage(Request $request)
     {
         // Get filters from request
-        $eventStatus = $request->input('event_status', 'upcoming');
-        $participationStatus = $request->input('participation_status', 'all');
+        $eventStatus = $request->input('event_status');
+        $participationStatus = $request->input('participation_status');
 
         // Base query to get events
         $query = Event::query();
@@ -31,12 +31,28 @@ class EventController extends Controller
             $query->where('club_id', $user->club_id); // Assuming the User model has a 'club_id' field
         }
 
-        // Filter by event status (upcoming, completed, all)
+        $now = Carbon::now();
+
         if ($eventStatus == 'upcoming') {
-            $query->where('date', '>=', Carbon::now())->orderBy('date', 'asc');
+            // Include events today that haven't ended yet
+            $query->where(function ($query) use ($now) {
+                $query->where('date', '>', $now->toDateString())
+                    ->orWhere(function ($query) use ($now) {
+                        $query->where('date', $now->toDateString())
+                            ->where('end_time', '>', $now->toTimeString());
+                    });
+            })->orderBy('date', 'asc');
         } elseif ($eventStatus == 'completed') {
-            $query->where('date', '<', Carbon::now())->orderBy('date', 'desc');
+            // Include events that have ended before today or events that ended earlier today
+            $query->where(function ($query) use ($now) {
+                $query->where('date', '<', $now->toDateString())
+                    ->orWhere(function ($query) use ($now) {
+                        $query->where('date', $now->toDateString())
+                            ->where('end_time', '<=', $now->toTimeString());
+                    });
+            })->orderBy('date', 'desc');
         }
+
 
         if ($user->hasRole('user')) {
             if ($participationStatus == 'all') {
@@ -66,24 +82,26 @@ class EventController extends Controller
         $userId = Auth::id();
         $eventId = $request->input('event_id');
 
-        // Check if the user is already registered
-        $existingRegistration = DB::table('event_participant')
-            ->where('user_id', $userId)
-            ->where('event_id', $eventId)
-            ->first();
+        // Fetch event details to check approval requirement
+        $event = DB::table('event')->where('id', $eventId)->first();
 
-        if ($existingRegistration) {
+        if (!$event) {
             return response()->json([
                 'success' => false,
-                'message' => 'You are already registered for this event.'
+                'message' => 'Event not found.'
             ]);
         }
+
+        // Determine approval status based on the event's `participant_approval_required` field
+        $isApproved = $event->participant_approval_required ? 0 : 1;
 
         // Register the user for the event
         DB::table('event_participant')->insert([
             'user_id' => $userId,
             'event_id' => $eventId,
-            'created_at' => now()
+            'isApproved' => $isApproved,
+            'created_at' => now(),
+            'updated_at' => now()
         ]);
 
         return response()->json([
@@ -91,6 +109,7 @@ class EventController extends Controller
             'message' => 'Registration successful!'
         ]);
     }
+
 
     public function unregister(Request $request)
     {
@@ -140,6 +159,7 @@ class EventController extends Controller
                 'start_time' => 'required|date_format:H:i',
                 'end_time' => 'required|date_format:H:i|after:start_time',
                 'max_participants' => 'required|integer|min:0',
+                'participant_approval_required' => 'required|in:0,1',
                 'theme' => 'required|string|in:Light,Dark,Minimal',
                 'background_color' => 'nullable|string',
                 'text_color' => 'nullable|string',
@@ -155,6 +175,7 @@ class EventController extends Controller
             $event->start_time = $request->start_time;
             $event->end_time = $request->end_time;
             $event->max_participants = $request->max_participants;
+            $event->participant_approval_required = $request->participant_approval_required;
             $event->club_id = Auth::user()->club_id;
             $event->theme = $request->theme;
             $event->background_color = $request->background_color;
@@ -189,6 +210,7 @@ class EventController extends Controller
                     'start_time' => Carbon::parse($event->start_time)->format('H:i'),
                     'end_time' => Carbon::parse($event->end_time)->format('H:i'),
                     'max_participants' => $event->max_participants,
+                    'participant_approval_required' => $event->participant_approval_required,
                     'description' => $event->description,
                     'theme' => $event->theme,
                     'poster' => $event->poster ? base64_encode($event->poster) : null,
@@ -211,6 +233,7 @@ class EventController extends Controller
             'start_time' => 'required|date_format:H:i',
             'end_time' => 'required|date_format:H:i|after:start_time',
             'max_participants' => 'required|integer|min:0',
+            'participant_approval_required' => 'required|in:0,1',
             'description' => 'required|string',
             'poster' => 'nullable|image|mimes:jpeg,png,jpg|max:10240',
             'theme' => 'required|string',
@@ -226,6 +249,7 @@ class EventController extends Controller
             $event->start_time = $request->start_time;
             $event->end_time = $request->end_time;
             $event->max_participants = $request->max_participants;
+            $event->participant_approval_required = $request->participant_approval_required;
             $event->description = $request->description;
             $event->theme = $request->theme;
             $event->background_color = $request->background_color;

@@ -152,9 +152,8 @@
                             <p>Welcome! Log in to iClub to register for the event.</p>
                             <br>
                             <div class="d-grid gap-2">
-                                <a href="{{ route('login') }}" target="_blank"
-                                    class="btn {{ strtolower($event->theme) == 'dark' ? 'btn-light text-dark' : 'btn-dark text-light' }}"><span
-                                        style="font-style: italic">iClub </span>Log In</a>
+                                <a href="{{ route('iclub.event.page') }}" target="_blank"
+                                    class="btn {{ strtolower($event->theme) == 'dark' ? 'btn-light text-dark' : 'btn-dark text-light' }}">Register</a>
                             </div>
                         </div>
                     </div>

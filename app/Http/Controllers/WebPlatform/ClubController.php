@@ -55,7 +55,8 @@ class ClubController extends Controller
 
         // Filter clubs by category, if provided
         if ($categoryId) {
-            $query->where('category_id', $categoryId);
+            $query->where('category_id', $categoryId)
+                ->orderBy('name', 'asc');
         }
 
         $clubs = $query->withCount(['members as members_count' => function ($q) {
@@ -87,20 +88,36 @@ class ClubController extends Controller
             ]);
         }
 
+        // Fetch the club's approval setting
+        $club = DB::table('club')->where('id', $clubId)->first();
+
+        if (!$club) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Club not found.'
+            ]);
+        }
+
+        // Determine the approval status based on the club's memberApprovalRequired value
+        $isApproved = $club->memberApprovalRequired ? 0 : 1;
+
         // Register the user for the club
         DB::table('club_member')->insert([
             'user_id' => $userId,
             'club_id' => $clubId,
-            'isApproved' => 0,
+            'isApproved' => $isApproved,
             'created_at' => now(),
             'updated_at' => now()
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Successfully joined the club!'
+            'message' => $isApproved
+                ? 'Successfully joined the club!'
+                : 'Your membership request is pending approval.'
         ]);
     }
+
 
     public function deleteClub(Request $request, $clubId)
     {

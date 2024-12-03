@@ -87,7 +87,8 @@
                         </div>
                         <div class="mb-3">
                             <label for="add_sunway_imail" class="form-label">Sunway Imail</label>
-                            <input type="email" class="form-control" id="add_sunway_imail">
+                            <input type="email" pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                                class="form-control" id="add_sunway_imail" required>
                             <div class="invalid-feedback">Please enter a valid email format.</div>
                         </div>
                         <div class="mb-3">
@@ -150,7 +151,8 @@
                         </div>
                         <div class="mb-3">
                             <label for="edit_sunway_imail" class="form-label">Sunway Imail</label>
-                            <input type="email" class="form-control" id="edit_sunway_imail" required>
+                            <input type="email" pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                                class="form-control" id="edit_sunway_imail" required>
                             <div class="invalid-feedback">Please enter a valid email format.</div>
                         </div>
                         <div class="mb-3">
@@ -316,52 +318,87 @@
             $.ajax({
                 url: `/iclub/user/${userId}`,
                 type: 'GET',
-                success: function(data) {
-                    $('#userId').val(data.id);
-                    $('#edit_name').val(data.name);
-                    $('#edit_sunway_imail').val(data.email);
-                    $('#edit_student_id').val(data.student_id);
-                    $('#edit_personal_email').val(data.personal_email);
-                    $('#edit_phone').val(data.phone);
-                    $('#edit_course_of_study').val(data.course_of_study);
-                    $('#edit_role').val(data.role);
+                success: function(userData) {
+                    // Modify populateRolesAndClubs to return a Promise
+                    populateRolesAndClubs()
+                        .then(() => {
+                            // Debugging: Log available options
+                            console.log('Available role options:',
+                                $('#edit_role option').map(function() {
+                                    return $(this).val();
+                                }).get()
+                            );
 
-                    if (data.role === 'club_manager') {
-                        $('#edit_club_id').val(data.club_id);
-                        $('.club-select').show();
-                        $('.student-fields').hide();
-                        $('.personal-fields').hide();
-                    } else if (data.role === 'user') {
-                        $('.student-fields').show();
-                        $('.personal-fields').show();
-                        $('.club-select').hide();
-                    } else {
-                        $('.club-select, .student-fields, .personal-fields').hide();
-                    }
+                            // Set form values using userData instead of user
+                            $('#userId').val(userData.id);
+                            $('#edit_name').val(userData.name);
+                            $('#edit_sunway_imail').val(userData.email);
+                            $('#edit_student_id').val(userData.student_id);
+                            $('#edit_personal_email').val(userData.personal_email);
+                            $('#edit_phone').val(userData.phone);
+                            $('#edit_course_of_study').val(userData.course_of_study);
 
-                    $('#editUserModal').modal('show');
-                    populateRolesAndClubs();
+                            // Attempt multiple ways to set the role
+                            $('#edit_role').val(userData.role);
+                            $('#edit_role').find(`option[value="${userData.role}"]`).prop('selected', true);
+
+                            // Force change event
+                            $('#edit_role').trigger('change');
+
+                            // Club selection
+                            if (userData.club_id) {
+                                $('#edit_club_id').val(userData.club_id);
+                            }
+
+                            // Visibility logic
+                            if (userData.role === 'club_manager') {
+                                $('.club-select').show();
+                                $('.student-fields').hide();
+                                $('.personal-fields').hide();
+                            } else if (userData.role === 'user') {
+                                $('.student-fields').show();
+                                $('.personal-fields').show();
+                                $('.club-select').hide();
+                            } else {
+                                $('.club-select, .student-fields, .personal-fields').hide();
+                            }
+
+                            // Show modal
+                            $('#editUserModal').modal('show');
+                        })
+                        .catch(error => {
+                            console.error('Error in populating roles and clubs:', error);
+                        });
                 },
                 error: function(err) {
                     console.error('Error fetching user data:', err);
-                    Swal.fire(
-                        'Error!',
-                        'An error occurred while fetching the user data.',
-                        'error'
-                    );
+                    Swal.fire('Error!', 'An error occurred while fetching the user data.', 'error');
                 }
             });
-        };
-
+        }
 
         $('#editUserForm').on('submit', function(event) {
             event.preventDefault();
 
             if (this.checkValidity()) {
-                saveUser();
+                addUser(this);
+            } else {
+                this.classList.add('was-validated'); // Apply validation feedback
+
+                // Find the first invalid field
+                const firstInvalidField = this.querySelector(':invalid');
+                if (firstInvalidField) {
+                    // Focus on the first invalid field
+                    firstInvalidField.focus();
+
+                    // Smoothly scroll to the first invalid field
+                    firstInvalidField.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }
             }
 
-            this.classList.add('was-validated');
         });
 
         function saveUser() {
@@ -405,10 +442,24 @@
             event.preventDefault();
 
             if (this.checkValidity()) {
-                addUser();
+                addUser(this);
+            } else {
+                this.classList.add('was-validated'); // Apply validation feedback
+
+                // Find the first invalid field
+                const firstInvalidField = this.querySelector(':invalid');
+                if (firstInvalidField) {
+                    // Focus on the first invalid field
+                    firstInvalidField.focus();
+
+                    // Smoothly scroll to the first invalid field
+                    firstInvalidField.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                }
             }
 
-            this.classList.add('was-validated');
         });
 
         function deleteUser(userId) {
@@ -449,62 +500,78 @@
         }
 
         function populateRolesAndClubs() {
-            // Role display mapping
-            const roleDisplayNames = {
-                "admin": "Admin",
-                "club_manager": "Club Manager",
-                "user": "User"
-            };
+            return new Promise((resolve, reject) => {
+                const roleDisplayNames = {
+                    "admin": "Admin",
+                    "club_manager": "Club Manager",
+                    "user": "User"
+                };
 
-            // Populate roles dynamically
-            $.ajax({
-                url: '/iclub/role/data',
-                type: 'GET',
-                success: function(rolesData) {
-                    const addRoleSelect = $('#add_role');
-                    const editRoleSelect = $('#edit_role');
-                    addRoleSelect.empty();
-                    editRoleSelect.empty();
-                    addRoleSelect.append('<option value="">Select a role</option>');
-                    editRoleSelect.append('<option value="">Select a role</option>');
-                    rolesData.roles.forEach(role => {
-                        const displayName = roleDisplayNames[role.name] || role
-                        .name; // Use mapping or fallback to default
-                        addRoleSelect.append(`<option value="${role.name}">${displayName}</option>`);
-                        editRoleSelect.append(`<option value="${role.name}">${displayName}</option>`);
-                    });
-                },
-                error: function(err) {
-                    console.error('Error fetching roles:', err);
-                    Swal.fire('Error!', 'An error occurred while fetching roles.', 'error');
-                }
-            });
+                // Fetch roles and clubs in parallel
+                const fetchRoles = $.ajax({
+                    url: '/iclub/role/data',
+                    type: 'GET'
+                });
 
-            // Populate clubs dynamically
-            $.ajax({
-                url: '/iclub/club/data',
-                type: 'GET',
-                success: function(clubsData) {
-                    const addClubSelect = $('#add_club_id');
-                    const editClubSelect = $('#edit_club_id');
-                    addClubSelect.empty();
-                    editClubSelect.empty();
-                    addClubSelect.append('<option value="">No Club</option>');
-                    editClubSelect.append('<option value="">No Club</option>');
-                    clubsData.clubs.forEach(club => {
-                        addClubSelect.append(`<option value="${club.id}">${club.name}</option>`);
-                        editClubSelect.append(`<option value="${club.id}">${club.name}</option>`);
+                const fetchClubs = $.ajax({
+                    url: '/iclub/club/data',
+                    type: 'GET'
+                });
+
+                $.when(fetchRoles, fetchClubs)
+                    .then((rolesResponse, clubsResponse) => {
+                        const rolesData = rolesResponse[0];
+                        const clubsData = clubsResponse[0];
+
+                        console.log('Roles data:', rolesData);
+                        console.log('Clubs data:', clubsData);
+
+                        // Populate roles
+                        const addRoleSelect = $('#add_role');
+                        const editRoleSelect = $('#edit_role');
+                        addRoleSelect.empty();
+                        editRoleSelect.empty();
+
+                        // Default option
+                        addRoleSelect.append('<option value="">Select a role</option>');
+                        editRoleSelect.append('<option value="">Select a role</option>');
+
+                        // Populate role options
+                        rolesData.roles.forEach(role => {
+                            const displayName = roleDisplayNames[role.name] || role.name;
+                            const optionHtml = `<option value="${role.name}">${displayName}</option>`;
+                            addRoleSelect.append(optionHtml);
+                            editRoleSelect.append(optionHtml);
+                        });
+
+                        // Populate clubs
+                        const addClubSelect = $('#add_club_id');
+                        const editClubSelect = $('#edit_club_id');
+                        addClubSelect.empty();
+                        editClubSelect.empty();
+
+                        // Default option
+                        addClubSelect.append('<option value="">No Club</option>');
+                        editClubSelect.append('<option value="">No Club</option>');
+
+                        // Populate club options
+                        clubsData.clubs.forEach(club => {
+                            const optionHtml = `<option value="${club.id}">${club.name}</option>`;
+                            addClubSelect.append(optionHtml);
+                            editClubSelect.append(optionHtml);
+                        });
+
+                        resolve();
+                    })
+                    .fail((err) => {
+                        console.error('Error fetching roles or clubs:', err);
+                        Swal.fire('Error!', 'An error occurred while fetching roles or clubs.', 'error');
+                        reject(err);
                     });
-                },
-                error: function(err) {
-                    console.error('Error fetching clubs:', err);
-                    Swal.fire('Error!', 'An error occurred while fetching clubs.', 'error');
-                }
             });
         }
 
-
-        $('#addUserModal, #editUserModal').on('show.bs.modal', function() {
+        $('#addUserModal').on('show.bs.modal', function() {
             populateRolesAndClubs();
         });
 

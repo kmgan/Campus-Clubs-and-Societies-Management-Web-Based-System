@@ -68,6 +68,11 @@
         .details-card {
             overflow: hidden;
         }
+
+        .card-title {
+            height: 48px;
+            margin-bottom: 0.5rem;
+        }
     </style>
 
     <h1 class="fw-bold">Clubs</h1>
@@ -126,7 +131,7 @@
             @if ($joinStatus === 'all' || $joinStatus === 'joined')
                 <div id="joinedClubsSection" class="mt-3">
                     <h2 class="fw-bold">Joined Clubs</h2>
-                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 mt-3">
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 row-cols-xxl-5 mt-3">
                         @php
                             $joinedClubs = $clubs->filter(function ($club) {
                                 return $club->members->contains('user_id', auth()->id());
@@ -148,11 +153,23 @@
                                             </a>
                                         </div>
                                         <div class="card-body border-top">
-                                            <h5 class="card-title text-center">{{ $club->name }}</h5>
+                                            <h5 class="card-title">{{ $club->name }}</h5>
                                             <p class="card-text text-muted">{{ $club->club_category->name }}</p>
                                             <p class="card-text text-muted">Membership fee: {{ $club->membership_fee }}</p>
                                             <p class="card-text text-muted">Total Members: {{ $club->members_count ?? '0' }}
                                             </p>
+
+                                            @if ($club->memberApprovalRequired)
+                                                <span class="badge bg-warning text-dark" data-bs-toggle="tooltip"
+                                                    title="Your membership request will need to be approved by the club manager.">
+                                                    Approval Required
+                                                </span>
+                                            @else
+                                                <span class="badge bg-success" data-bs-toggle="tooltip"
+                                                    title="Your membership request will be approved automatically.">
+                                                    No Approval Needed
+                                                </span>
+                                            @endif
                                         </div>
                                         @role('user')
                                             <div class="card-footer">
@@ -200,7 +217,7 @@
         @if ($joinStatus === 'all' || $joinStatus === 'available')
             <div id="availableClubsSection" class="mt-3">
                 <h2 class="fw-bold">Available Clubs</h2>
-                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 mt-3">
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 row-cols-xxl-5 mt-3">
                     @php
                         $availableClubs = $clubs->filter(function ($club) {
                             return !$club->members->contains('user_id', auth()->id());
@@ -222,11 +239,23 @@
                                         </a>
                                     </div>
                                     <div class="card-body border-top">
-                                        <h5 class="card-title text-center">{{ $club->name }}</h5>
+                                        <h5 class="card-title">{{ $club->name }}</h5>
                                         <p class="card-text text-muted">{{ $club->club_category->name }}</p>
                                         <p class="card-text text-muted">Membership fee: {{ $club->membership_fee }}</p>
                                         <p class="card-text text-muted">Total Members: {{ $club->members_count ?? '0' }}
                                         </p>
+
+                                        @if ($club->memberApprovalRequired)
+                                            <span class="badge bg-warning text-dark" data-bs-toggle="tooltip"
+                                                title="Your membership request will need to be approved by the club manager.">
+                                                Approval Required
+                                            </span>
+                                        @else
+                                            <span class="badge bg-success" data-bs-toggle="tooltip"
+                                                title="Your membership request will be approved automatically.">
+                                                No Approval Needed
+                                            </span>
+                                        @endif
                                     </div>
                                     @role('user')
                                         <div class="card-footer">
@@ -361,12 +390,28 @@
             // Create Club logic
             document.getElementById('createClubForm').addEventListener('submit', function(event) {
                 event.preventDefault();
+
+                // Check form validity
                 if (this.checkValidity()) {
                     createClub(this); // Pass the form element to the function
                 } else {
-                    this.classList.add('was-validated');
+                    this.classList.add('was-validated'); // Apply validation feedback
+
+                    // Find the first invalid field
+                    const firstInvalidField = this.querySelector(':invalid');
+                    if (firstInvalidField) {
+                        // Focus on the first invalid field
+                        firstInvalidField.focus();
+
+                        // Smoothly scroll to the first invalid field
+                        firstInvalidField.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+                    }
                 }
             });
+
 
             // Delete Club logic
             deleteButtons.forEach(button => {

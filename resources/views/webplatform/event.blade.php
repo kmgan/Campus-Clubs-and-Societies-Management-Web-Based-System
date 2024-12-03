@@ -75,6 +75,11 @@
         .details-card {
             overflow: hidden;
         }
+
+        .card-title {
+            height: 48px;
+            margin-bottom: 0.5rem;
+        }
     </style>
     <h1 class="fw-bold">Events</h1>
 
@@ -126,19 +131,35 @@
 
         {{-- Separate Events into Upcoming and Completed --}}
         @php
-            $ongoingEvents = $events->filter(function ($event) {
-                return \Carbon\Carbon::parse($event->date)->isToday() ||
-                    \Carbon\Carbon::parse($event->date)->isFuture();
+            $now = \Carbon\Carbon::now('Asia/Kuala_Lumpur');
+
+            // Debug information
+            foreach ($events as $event) {
+                $eventDate = \Carbon\Carbon::parse($event->date)->startOfDay();
+                \Log::info(
+                    "Event {$event->id}: EventDate: {$eventDate}, IsUpcoming: " .
+                        ($eventDate->gte($now->startOfDay()) ? 'true' : 'false'),
+                );
+            }
+
+            $ongoingEvents = $events->filter(function ($event) use ($now) {
+                return \Carbon\Carbon::parse($event->date)
+                    ->startOfDay()
+                    ->gte($now->startOfDay());
             });
-            $completedEvents = $events->filter(function ($event) {
-                return \Carbon\Carbon::parse($event->date)->isPast();
+
+            $completedEvents = $events->filter(function ($event) use ($now) {
+                return \Carbon\Carbon::parse($event->date)
+                    ->startOfDay()
+                    ->lt($now->startOfDay());
             });
         @endphp
+
 
         {{-- Upcoming Events Section --}}
         <div id="ongoingEventsSection" class="mt-3">
             <h2 class="fw-bold">Upcoming Events</h2>
-            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 mt-3">
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 row-cols-xxl-5 mt-3">
                 @if ($ongoingEvents->isEmpty())
                     <p>No upcoming events found.</p>
                 @else
@@ -163,22 +184,31 @@
                                             at {{ \Carbon\Carbon::parse($event->start_time)->format('h:i A') }}</small>
                                     </p>
                                     <p class="card-text">
-                                        <small class="text-muted">Location: {{ $event->location }}</small>
+                                        <small class="text-muted">{{ $event->location }}</small>
                                     </p>
                                     <p>
                                         <small class="text-muted">{{ $event->participants_count }} Going |</small>
-                                        @if ($event->max_participants - $event->participants_count > 0)
-                                            <small
-                                                class="text-muted">{{ $event->max_participants - $event->participants_count }}
-                                                spots left</small>
-                                        @endif
+                                        <small
+                                            class="text-muted">{{ $event->max_participants - $event->participants_count }}
+                                            spots left</small>
                                     </p>
+                                    @if ($event->participant_approval_required)
+                                        <span class="badge bg-warning text-dark" data-bs-toggle="tooltip"
+                                            data-bs-placement="top" title="This event requires approval to participate">
+                                            Approval Required
+                                        </span>
+                                    @else
+                                        <span class="badge bg-success" data-bs-toggle="tooltip" data-bs-placement="top"
+                                            title="This event does not require approval to participate">
+                                            No Approval Required
+                                        </span>
+                                    @endif
                                 </div>
                                 @role('user')
                                     <div class="card-footer">
                                         <div class="d-grid gap-2 mt-1">
                                             <!-- Check if the event has ended -->
-                                            @if (Carbon\Carbon::now()->greaterThanOrEqualTo(Carbon\Carbon::parse($event->date)->setTimeFromTimeString($event->end_time)))
+                                            @if (Carbon\Carbon::now()->lessThanOrEqualTo(Carbon\Carbon::parse($event->date)->setTimeFromTimeString($event->end_time)))
                                                 <!-- If the event has ended, show "Event Ended" button -->
                                                 <button class="btn btn-secondary btn-sm" type="button" disabled>Event
                                                     Ended</button>
@@ -260,7 +290,7 @@
         {{-- Completed Events Section --}}
         <div id="completedEventsSection" class="mt-3">
             <h2 class="fw-bold">Completed Events</h2>
-            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 mt-3">
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 row-cols-xxl-5 mt-3">
                 @if ($completedEvents->isEmpty())
                     <p>No completed events found.</p>
                 @else
@@ -285,16 +315,25 @@
                                             at {{ \Carbon\Carbon::parse($event->start_time)->format('h:i A') }}</small>
                                     </p>
                                     <p class="card-text">
-                                        <small class="text-muted">Location: {{ $event->location }}</small>
+                                        <small class="text-muted">{{ $event->location }}</small>
                                     </p>
                                     <p>
                                         <small class="text-muted">{{ $event->participants_count }} Going |</small>
-                                        @if ($event->max_participants - $event->participants_count > 0)
-                                            <small
-                                                class="text-muted">{{ $event->max_participants - $event->participants_count }}
-                                                spots left</small>
-                                        @endif
+                                        <small
+                                            class="text-muted">{{ $event->max_participants - $event->participants_count }}
+                                            spots left</small>
                                     </p>
+                                    @if ($event->participant_approval_required)
+                                        <span class="badge bg-warning text-dark" data-bs-toggle="tooltip"
+                                            data-bs-placement="top" title="This event requires approval to participate">
+                                            Approval Required
+                                        </span>
+                                    @else
+                                        <span class="badge bg-success" data-bs-toggle="tooltip" data-bs-placement="top"
+                                            title="This event does not require approval to participate">
+                                            No Approval Required
+                                        </span>
+                                    @endif
                                 </div>
                                 @role('user')
                                     <div class="card-footer">
@@ -462,6 +501,12 @@
                             <input type="number" class="form-control" id="maxParticipants" name="max_participants"
                                 min="0" required>
                         </div>
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" role="switch"
+                                id="participantApprovalRequired" name="participant_approval_required">
+                            <label class="form-check-label" for="participantApprovalRequired">Participant
+                                Approval</label>
+                        </div>
                         <!-- Theme Selector -->
                         <div class="mb-3">
                             <label for="eventTheme" class="form-label">Theme</label>
@@ -565,6 +610,13 @@
                             <input type="number" class="form-control" id="editMaxParticipants" name="max_participants"
                                 min="0" required>
                         </div>
+                        <!-- Participant Approval Switch -->
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" role="switch"
+                                id="editParticipantApprovalRequired" name="participant_approval_required">
+                            <label class="form-check-label" for="editParticipantApprovalRequired">Participant
+                                Approval</label>
+                        </div>
                         <div class="mb-3">
                             <label for="editEventTheme" class="form-label">Theme</label>
                             <select class="form-select" id="editEventTheme" name="theme" required>
@@ -647,8 +699,33 @@
         </div>
     </div>
 
+    <!-- Add this HTML for the loading spinner -->
+    <div id="loadingSpinner"
+        style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.8); z-index: 9999; display: flex; align-items: center; justify-content: center;">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Show the loading spinner
+            document.getElementById('loadingSpinner').style.display = 'flex';
+
+            tinymce.init({
+                selector: '#eventDescription, #editEventDescription',
+                license_key: 'gpl',
+                plugins: 'lists link image table code',
+                toolbar: 'h1 h2 | undo redo | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image',
+                menubar: false,
+                setup: function(editor) {
+                    editor.on('init', function() {
+                        // Hide the loading spinner once TinyMCE is initialized
+                        document.getElementById('loadingSpinner').style.display = 'none';
+                    });
+                }
+            });
+
             // Register Button Handling
             const registerButtons = document.querySelectorAll('.register-button');
             const cancelRegistrationButtons = document.querySelectorAll('.cancel-registration-button');
@@ -818,36 +895,16 @@
                 });
             });
 
-            // Add event listener for create event form submission with validation
-            document.getElementById('createEventForm').addEventListener('submit', function(event) {
-                event.preventDefault(); // Prevent the default form submission
-
-                if (this.checkValidity()) {
-                    createEvent(); // Only call createEvent if the form is valid
-                } else {
-
-                    this.classList.add('was-validated'); // Show validation feedback
-                }
-            });
-
-            document.getElementById('editEventForm').addEventListener('submit', function(event) {
-                event.preventDefault();
-
-                // If form is valid, proceed with submission immediately
-                if (this.checkValidity()) {
-                    const eventId = this.getAttribute('data-event-id');
-                    editEvent(eventId);
-                }
-
-                // Add validation feedback
-                this.classList.add('was-validated');
-            });
-
-            // Reset validation feedback and form fields when modals are hidden
+            // Reset validation feedback, form fields, and hide image previews when modals are hidden
             $('#createEventModal, #editEventModal').on('hidden.bs.modal',
                 function() {
                     $(this).find('form')[0].reset(); // Reset form fields
                     $(this).find('form').removeClass('was-validated'); // Remove validation styles
+
+                    // Hide image previews
+                    $(this).find('img').each(function() {
+                        $(this).attr('src', '').hide();
+                    });
                 });
 
             // Poster Preview Handling
@@ -955,76 +1012,6 @@
                     e.stopImmediatePropagation();
                 }
             });
-
-            function createEvent() {
-                const formData = new FormData(document.getElementById('createEventForm'));
-                formData.append('description', tinymce.get('eventDescription').getContent());
-
-                $.ajax({
-                    url: "{{ route('iclub.event.create') }}",
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false, // Important for FormData
-                    success: function(response) {
-                        $('#createEventModal').modal('hide'); // Close modal
-                        Swal.fire({
-                            title: 'Success!',
-                            text: 'Event created successfully.',
-                            icon: 'success',
-                            timer: 1500,
-                            showConfirmButton: false
-                        });
-                        location.reload(); // Refresh the page or list
-                    },
-                    error: function(err) {
-                        handleAjaxError(err);
-                    }
-                });
-            }
-
-            function editEvent(eventId) {
-                const formData = new FormData(document.getElementById('editEventForm'));
-                formData.append('_method', 'PUT');
-
-                // Add TinyMCE content
-                const description = tinymce.get('editEventDescription').getContent();
-                formData.append('description', description);
-
-                // Log the data being sent (for debugging)
-                for (let pair of formData.entries()) {
-                    console.log(pair[0] + ': ' + pair[1]);
-                }
-
-                $.ajax({
-                    url: `/iclub/event/${eventId}`,
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    success: function(response) {
-                        $('#editEventModal').modal('hide');
-                        Swal.fire({
-                            title: 'Success!',
-                            text: 'Event updated successfully.',
-                            icon: 'success',
-                            allowOutsideClick: false, // Prevents closing by clicking outside
-                            allowEscapeKey: false, // Prevents closing via the ESC key
-                            showConfirmButton: true // Displays an "OK" button
-                        }).then(() => {
-                            // Reload the page only after the user clicks the "OK" button
-                            location.reload();
-                        });
-                    },
-                    error: function(err) {
-                        console.log('Error response:', err.responseJSON); // Add this line
-                        handleAjaxError(err);
-                    }
-                });
-            }
 
             document.querySelectorAll('.attendance-button').forEach(button => {
                 button.addEventListener('click', function() {
@@ -1143,6 +1130,154 @@
             }
         });
 
+        function createEvent() {
+            const formData = new FormData(document.getElementById('createEventForm'));
+            formData.append('description', tinymce.get('eventDescription').getContent());
+
+            // Convert checkbox value to boolean
+            const approvalRequired = document.getElementById('participantApprovalRequired').checked ? '1' : '0';
+            formData.append('participant_approval_required', approvalRequired);
+
+            $.ajax({
+                url: "{{ route('iclub.event.create') }}",
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false, // Important for FormData
+                success: function(response) {
+                    $('#createEventModal').modal('hide'); // Close modal
+                    Swal.fire({
+                        title: 'Success!',
+                        text: 'Event created successfully.',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    location.reload(); // Refresh the page or list
+                },
+                error: function(err) {
+                    console.log('Error response:', err.responseJSON); // Add this line
+                }
+            });
+        }
+
+        function editEvent(eventId) {
+            console.log('editEvent function called with eventId:', eventId);
+
+            const formData = new FormData(document.getElementById('editEventForm'));
+            formData.append('_method', 'PUT');
+
+            // Add TinyMCE content
+            const description = tinymce.get('editEventDescription').getContent();
+            formData.append('description', description);
+
+            const participantApprovalRequired = document.getElementById('editParticipantApprovalRequired').checked ? '1' : '0';
+            formData.set('participant_approval_required', participantApprovalRequired);
+
+            $.ajax({
+                url: `/iclub/event/${eventId}`,
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    $('#editEventModal').modal('hide');
+                    Swal.fire({
+                        title: 'Success!',
+                        text: 'Event updated successfully.',
+                        icon: 'success',
+                        showConfirmButton: true,
+                        confirmButtonText: 'OK',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            location.reload();
+                        }
+                    });
+                },
+                error: function(err) {
+                    console.log('Error response:', err.responseJSON);
+                    let errorMessage = 'An unexpected error occurred.';
+
+                    // Try to get more specific error message if available
+                    if (err.responseJSON && err.responseJSON.message) {
+                        errorMessage = err.responseJSON.message;
+                    } else if (err.responseJSON && err.responseJSON.error) {
+                        errorMessage = err.responseJSON.error;
+                    }
+
+                    Swal.fire({
+                        title: 'Error!',
+                        text: errorMessage,
+                        icon: 'error',
+                        showConfirmButton: true,
+                        confirmButtonText: 'OK',
+                        allowOutsideClick: false,
+                        allowEscapeKey: false
+                    });
+                }
+            });
+        }
+
+        $('#createEventForm').on('submit', function(event) {
+            event.preventDefault(); // Prevent default submission behavior
+
+            // Synchronize TinyMCE content with the underlying textarea
+            const editor = tinymce.get('eventDescription');
+            if (editor) {
+                editor.save(); // This ensures the TinyMCE content is written to the textarea
+            }
+
+            // Check form validity and proceed
+            if (this.checkValidity()) {
+                createEvent(); // Call the function to create the event
+            } else {
+                // Find the first invalid field
+                const firstInvalidField = this.querySelector(':invalid');
+                if (firstInvalidField) {
+                    firstInvalidField.focus(); // Focus on the first invalid field
+                    firstInvalidField.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    }); // Smoothly scroll to the field
+                }
+            }
+
+            this.classList.add('was-validated'); // Add Bootstrap validation feedback
+        });
+
+        $('#editEventForm').on('submit', function(event) {
+            event.preventDefault(); // Prevent default submission behavior
+
+            // Synchronize TinyMCE content with the underlying textarea
+            const editor = tinymce.get('editEventDescription');
+            if (editor) {
+                editor.save(); // This ensures the TinyMCE content is written to the textarea
+            }
+
+            // Check form validity and proceed
+            if (this.checkValidity()) {
+                const eventId = this.getAttribute('data-event-id');
+                editEvent(eventId);
+            } else {
+                // Find the first invalid field
+                const firstInvalidField = this.querySelector(':invalid');
+                if (firstInvalidField) {
+                    firstInvalidField.focus(); // Focus on the first invalid field
+                    firstInvalidField.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    }); // Smoothly scroll to the field
+                }
+            }
+
+            this.classList.add('was-validated'); // Add validation feedback
+        });
+
         function populateEditForm(eventId) {
             fetch(`/iclub/event/${eventId}`)
                 .then(response => response.json())
@@ -1158,6 +1293,8 @@
                         document.getElementById('editEndTime').value = event.end_time;
                         document.getElementById('editEventTheme').value = event.theme;
                         document.getElementById('editMaxParticipants').value = event.max_participants;
+                        document.getElementById('editParticipantApprovalRequired').checked = event
+                            .participant_approval_required;
 
                         // Set the background color and text color
                         if (event.background_color) {
@@ -1186,6 +1323,8 @@
                         // Set the event ID on the form for later use
                         const editEventForm = document.getElementById('editEventForm');
                         editEventForm.setAttribute('data-event-id', eventId);
+
+                        handleThemeChange();
                     } else {
                         Swal.fire('Error!', 'Failed to fetch event data.', 'error');
                     }
@@ -1196,6 +1335,47 @@
                 });
         }
 
+        const themeSelect = document.getElementById('editEventTheme');
+        const backgroundColorPicker = document.getElementById('editBackgroundColor');
+        const textColorPicker = document.getElementById('editTextColor');
+
+        // Function to handle showing/hiding the color pickers
+        function handleThemeChange() {
+            if (themeSelect.value === 'Minimal') {
+                editColorPickerContainer.style.display = 'block'; // Show if Minimal is selected
+                editTextColorPickerContainer.style.display = 'block';
+            } else {
+                editColorPickerContainer.style.display = 'none'; // Hide if other theme is selected
+                editTextColorPickerContainer.style.display = 'none';
+            }
+        }
+
+        // Add event listener for theme selection change
+        themeSelect.addEventListener('change', handleThemeChange);
+
+        // Initial call to set the correct state when the page loads
+        handleThemeChange();
+
+        const addThemeSelect = document.getElementById('eventTheme');
+        const addColorPickerContainer = document.getElementById('addColorPickerContainer');
+        const addTextColorPickerContainer = document.getElementById('addTextColorPickerContainer');
+
+        // Function to handle showing/hiding the color pickers for the "add" form
+        function handleAddThemeChange() {
+            if (addThemeSelect.value === 'Minimal') {
+                addColorPickerContainer.style.display = 'block'; // Show if Minimal is selected
+                addTextColorPickerContainer.style.display = 'block';
+            } else {
+                addColorPickerContainer.style.display = 'none'; // Hide if other theme is selected
+                addTextColorPickerContainer.style.display = 'none';
+            }
+        }
+
+        // Add event listener for theme selection change in the "add" form
+        addThemeSelect.addEventListener('change', handleAddThemeChange);
+
+        // Initial call to set the correct state when the page loads for the "add" form
+        handleAddThemeChange();
 
         // Function to initialize or refresh the DataTable
         function setupAttendanceTable(eventId) {
@@ -1278,7 +1458,7 @@
 
                     if ($.fn.DataTable.isDataTable('#attendanceTable')) {
                         $('#attendanceTable').DataTable().ajax.reload(null,
-                        false); // Reload table without resetting pagination
+                            false); // Reload table without resetting pagination
                     }
 
                     // Check if there are any items left in the pending list

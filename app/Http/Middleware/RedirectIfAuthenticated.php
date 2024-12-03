@@ -28,9 +28,9 @@ class RedirectIfAuthenticated
                 if ($user->hasRole('admin')) {
                     return redirect()->route('iclub.user.page');
                 } elseif ($user->hasRole('club_manager')) {
-                    return redirect()->route('iclub.clubMember.page');
+                    return redirect()->route('iclub.event.page');
                 } elseif ($user->hasRole('user')) {
-                    return redirect()->route('iclub.club.page');
+                    return redirect()->route('iclub.event.page');
                 }
             }
         }

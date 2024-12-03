@@ -18,7 +18,7 @@ class WebsiteController extends Controller
         $clubs = $this->getFilteredClubs($request->input('keyword'), $request->input('category_id'));
 
         // Fetch categories for the dropdown
-        $categories = ClubCategory::all(); // Fetch all categories
+        $categories = ClubCategory::orderBy('name', 'asc')->get(); // Fetch all categories
 
         // Fetch events for this month and future events
         [$thisMonthEvents, $futureEvents] = $this->getEvents();
@@ -39,7 +39,8 @@ class WebsiteController extends Controller
 
         // Filter by category ID
         if ($categoryId && $categoryId !== 'All categories') {
-            $clubsQuery->where('category_id', $categoryId);
+            $clubsQuery->where('category_id', $categoryId)
+                ->orderBy('name', 'asc');
         }
 
         // Group by category_id

@@ -77,4 +77,6 @@ Route::middleware(['auth'])->prefix('iclub')->group(function () {
     Route::get('/pendingMember', [ClubMemberController::class, 'getPendingMember'])->name('iclub.pendingMembers.data')->middleware('role:club_manager');
     Route::put('/pendingMember/{id}/approve', [ClubMemberController::class, 'approveMember'])->name('iclub.pendingMembers.approve')->middleware('role:club_manager');
     Route::delete('/pendingMember/{id}/reject', [ClubMemberController::class, 'rejectMember'])->name('iclub.pendingMembers.reject')->middleware('role:club_manager');
+    Route::post('/clubMember/updateApprovalSetting', [ClubMemberController::class, 'updateApprovalSetting'])->name('iclub.clubMembers.updateApprovalSetting')->middleware('role:club_manager');
+
 });

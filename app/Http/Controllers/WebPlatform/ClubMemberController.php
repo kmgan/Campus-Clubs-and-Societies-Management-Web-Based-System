@@ -5,15 +5,24 @@ namespace App\Http\Controllers\WebPlatform;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\ClubMember;
-use App\Models\User;
+use App\Models\Club;
 use Illuminate\Support\Facades\Auth;
 
 class ClubMemberController extends Controller
 {
     public function showMemberPage()
     {
-        return view('webplatform.member');
+        // Assume the club ID is available via authentication or session
+        $clubId = auth()->user()->club_id;
+
+        // Fetch the club's data
+        $club = Club::findOrFail($clubId);
+
+        return view('webplatform.member', [
+            'memberApprovalRequired' => $club->memberApprovalRequired
+        ]);
     }
+
 
     public function getClubMembersData()
     {
@@ -194,5 +203,27 @@ class ClubMemberController extends Controller
 
         // Return success response
         return response()->json(['message' => 'Role updated successfully']);
+    }
+
+    public function updateApprovalSetting(Request $request)
+    {
+        try {
+            // Validate the input
+            $validatedData = $request->validate([
+                'memberApprovalRequired' => 'required|boolean',
+            ]);
+
+            // Assume club ID is available (e.g., via auth or session)
+            $clubId = auth()->user()->club_id;
+
+            // Update the memberApprovalRequired field in the database
+            $club = Club::findOrFail($clubId);
+            $club->memberApprovalRequired = $validatedData['memberApprovalRequired'];
+            $club->save();
+
+            return response()->json(['success' => true, 'message' => 'Approval setting updated successfully.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Failed to update the approval setting.'], 500);
+        }
     }
 }
