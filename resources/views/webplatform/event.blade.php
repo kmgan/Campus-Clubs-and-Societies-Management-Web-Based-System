@@ -177,7 +177,7 @@
                                 </div>
                                 <div class="card-body">
                                     <h5 class="card-title">{{ $event->name }}</h5>
-                                    <p class="card-text">Organized by: {{ $event->club->name }}</p>
+                                    <p class="card-text">{{ $event->club->name }}</p>
                                     <p class="card-text">
                                         <small
                                             class="text-muted">{{ \Carbon\Carbon::parse($event->date)->format('D, d M Y') }}
@@ -308,7 +308,7 @@
                                 </div>
                                 <div class="card-body">
                                     <h5 class="card-title">{{ $event->name }}</h5>
-                                    <p class="card-text">Organized by: {{ $event->club->name }}</p>
+                                    <p class="card-text">{{ $event->club->name }}</p>
                                     <p class="card-text">
                                         <small
                                             class="text-muted">{{ \Carbon\Carbon::parse($event->date)->format('D, d M Y') }}
