@@ -24,9 +24,9 @@ class LoginController extends Controller
         if ($user->hasRole('admin')) {
             return route('iclub.user.page');
         } elseif ($user->hasRole('club_manager')) {
-            return route('iclub.clubMember.page');
+            return route('iclub.event.page');
         } elseif ($user->hasRole('user')) {
-            return route('iclub.club.page');
+            return route('iclub.event.page');
         }
 
         return '/iclub/dashboard'; // Default fallback

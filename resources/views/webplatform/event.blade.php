@@ -208,7 +208,7 @@
                                     <div class="card-footer">
                                         <div class="d-grid gap-2 mt-1">
                                             <!-- Check if the event has ended -->
-                                            @if (Carbon\Carbon::now()->lessThanOrEqualTo(Carbon\Carbon::parse($event->date)->setTimeFromTimeString($event->end_time)))
+                                            @if (Carbon\Carbon::now()->greaterThanOrEqualTo(Carbon\Carbon::parse($event->date)->setTimeFromTimeString($event->end_time)))
                                                 <!-- If the event has ended, show "Event Ended" button -->
                                                 <button class="btn btn-secondary btn-sm" type="button" disabled>Event
                                                     Ended</button>
