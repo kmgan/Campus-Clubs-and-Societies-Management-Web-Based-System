@@ -28,6 +28,7 @@ class ClubController extends Controller
         // Get filters from the request
         $joinStatus = $request->input('join_status', 'all');
         $categoryId = $request->input('category_id', null);
+        $keyword = $request->input('keyword', null);
 
         /** @var \App\Models\User */
         $user = auth()->user();
@@ -39,6 +40,12 @@ class ClubController extends Controller
                 $q->where('isApproved', 1);
             }]);
 
+        // Apply keyword filter
+        if ($keyword) {
+            $query->where('name', 'like', '%' . $keyword . '%');
+        }
+
+        // Apply join status filters only for user role
         if ($user->hasRole('user')) {
             if ($joinStatus == 'joined') {
                 // Filter clubs where the user is already a member
@@ -55,13 +62,13 @@ class ClubController extends Controller
 
         // Filter clubs by category, if provided
         if ($categoryId) {
-            $query->where('category_id', $categoryId)
-                ->orderBy('name', 'asc');
+            $query->where('category_id', $categoryId);
         }
 
-        $clubs = $query->withCount(['members as members_count' => function ($q) {
-            $q->where('isApproved', 1);  // Only count approved members
-        }])->get();
+        // Always order by name ascending for consistency
+        $query->orderBy('name', 'asc');
+
+        $clubs = $query->get();
 
         // Fetch all categories for the dropdown filter
         $categories = ClubCategory::all();

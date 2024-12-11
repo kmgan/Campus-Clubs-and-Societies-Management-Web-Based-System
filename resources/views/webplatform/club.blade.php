@@ -155,7 +155,6 @@
                                         <div class="card-body border-top">
                                             <h5 class="card-title">{{ $club->name }}</h5>
                                             <p class="card-text text-muted">{{ $club->club_category->name }}</p>
-                                            <p class="card-text text-muted">Membership fee: {{ $club->membership_fee }}</p>
                                             <p class="card-text text-muted">Total Members: {{ $club->members_count ?? '0' }}
                                             </p>
 
@@ -241,7 +240,6 @@
                                     <div class="card-body border-top">
                                         <h5 class="card-title">{{ $club->name }}</h5>
                                         <p class="card-text text-muted">{{ $club->club_category->name }}</p>
-                                        <p class="card-text text-muted">Membership fee: {{ $club->membership_fee }}</p>
                                         <p class="card-text text-muted">Total Members: {{ $club->members_count ?? '0' }}
                                         </p>
 

@@ -19,6 +19,7 @@ class EventController extends Controller
         // Get filters from request
         $eventStatus = $request->input('event_status');
         $participationStatus = $request->input('participation_status');
+        $keyword = $request->input('keyword', null);
 
         // Base query to get events
         $query = Event::query();
@@ -32,6 +33,11 @@ class EventController extends Controller
         }
 
         $now = Carbon::now();
+
+        // Apply keyword filter
+        if ($keyword) {
+            $query->where('name', 'like', '%' . $keyword . '%');
+        }
 
         if ($eventStatus == 'upcoming') {
             // Include events today that haven't ended yet

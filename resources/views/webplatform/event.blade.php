@@ -187,7 +187,7 @@
                                         <small class="text-muted">{{ $event->location }}</small>
                                     </p>
                                     <p>
-                                        <small class="text-muted">{{ $event->participants_count }} Going |</small>
+                                        <small class="text-muted">{{ $event->participants_count }} going |</small>
                                         <small
                                             class="text-muted">{{ $event->max_participants - $event->participants_count }}
                                             spots left</small>
@@ -207,8 +207,8 @@
                                 @role('user')
                                     <div class="card-footer">
                                         <div class="d-grid gap-2 mt-1">
-                                            <!-- Check if the event has ended -->
-                                            @if (Carbon\Carbon::now()->greaterThanOrEqualTo(Carbon\Carbon::parse($event->date)->setTimeFromTimeString($event->end_time)))
+                                            @if (Carbon\Carbon::now()->greaterThanOrEqualTo(
+                                                    $event->date->copy()->setTime($event->end_time->hour, $event->end_time->minute, $event->end_time->second)))
                                                 <!-- If the event has ended, show "Event Ended" button -->
                                                 <button class="btn btn-secondary btn-sm" type="button" disabled>Event
                                                     Ended</button>
@@ -253,7 +253,7 @@
                                         </div>
                                     </div>
                                 @endrole
-                                @role('club_manager')
+                                @hasanyrole('club_manager|admin')
                                     <div class="card-footer">
                                         <div class="d-flex justify-content-between">
                                             <button class="btn btn-sm btn-primary flex-fill me-2 edit-event-button"
@@ -318,7 +318,7 @@
                                         <small class="text-muted">{{ $event->location }}</small>
                                     </p>
                                     <p>
-                                        <small class="text-muted">{{ $event->participants_count }} Going |</small>
+                                        <small class="text-muted">{{ $event->participants_count }} going |</small>
                                         <small
                                             class="text-muted">{{ $event->max_participants - $event->participants_count }}
                                             spots left</small>
@@ -338,8 +338,8 @@
                                 @role('user')
                                     <div class="card-footer">
                                         <div class="d-grid gap-2 mt-1">
-                                            <!-- Check if the event has ended -->
-                                            @if (Carbon\Carbon::now()->greaterThanOrEqualTo(Carbon\Carbon::parse($event->date)->setTimeFromTimeString($event->end_time)))
+                                            @if (Carbon\Carbon::now()->greaterThanOrEqualTo(
+                                                    $event->date->copy()->setTime($event->end_time->hour, $event->end_time->minute, $event->end_time->second)))
                                                 <!-- If the event has ended, show "Event Ended" button -->
                                                 <button class="btn btn-secondary btn-sm" type="button" disabled>Event
                                                     Ended</button>
@@ -384,7 +384,7 @@
                                         </div>
                                     </div>
                                 @endrole
-                                @role('club_manager')
+                                @hasanyrole('club_manager|admin')
                                     <div class="card-footer">
                                         <div class="d-flex justify-content-between">
                                             <button class="btn btn-sm btn-primary flex-fill me-2 edit-event-button"
@@ -1171,7 +1171,8 @@
             const description = tinymce.get('editEventDescription').getContent();
             formData.append('description', description);
 
-            const participantApprovalRequired = document.getElementById('editParticipantApprovalRequired').checked ? '1' : '0';
+            const participantApprovalRequired = document.getElementById('editParticipantApprovalRequired').checked ? '1' :
+                '0';
             formData.set('participant_approval_required', participantApprovalRequired);
 
             $.ajax({

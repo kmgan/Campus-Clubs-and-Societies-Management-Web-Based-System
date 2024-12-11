@@ -178,7 +178,7 @@
                                                 <h6 class="card-title">
                                                     <a href="{{ route('club.details', ['id' => $club->id]) }}"
                                                         target="_blank">
-                                                        {{ $club->name }} >
+                                                        {{ $club->name }}
                                                     </a>
                                                 </h6>
                                             </div>
@@ -237,7 +237,7 @@
                     @endif
 
                     <!-- Future Events -->
-                    <h3 class="text-white-50 mt-5">Coming Soon</h3>
+                    <h3 class="text-white-50 mt-1">Coming Soon</h3>
                     @if ($futureEvents->isEmpty())
                         <p>No upcoming events.</p>
                     @else

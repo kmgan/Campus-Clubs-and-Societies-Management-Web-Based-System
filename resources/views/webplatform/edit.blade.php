@@ -123,30 +123,30 @@
                     <h2>Contact Us Section</h2>
                     <div class="mb-3">
                         <label for="clubEmail" class="form-label">Email</label>
-                        <input type="email" pattern="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$" id="clubEmail"
-                            name="email" class="form-control" value="{{ $club->email }}">
+                        <input type="email" id="clubEmail" name="email" class="form-control"
+                            value="{{ $club->email }}">
                     </div>
                     <div class="mb-3">
                         <label for="clubFacebook" class="form-label">Facebook URL</label>
                         <input type="url" id="clubFacebook" name="facebook_url" class="form-control"
-                            value="{{ $club->facebook_url }}">
+                            value="{{ $club->facebook_url }}" placeholder="https://facebook.com/yourclubpage">
                     </div>
                     <div class="mb-3">
                         <label for="clubInstagram" class="form-label">Instagram URL</label>
                         <input type="url" id="clubInstagram" name="instagram_url" class="form-control"
-                            value="{{ $club->instagram_url }}">
+                            value="{{ $club->instagram_url }}" placeholder="https://instagram.com/yourclubname">
                     </div>
                     <div class="mb-3">
                         <label for="clubLinkedIn" class="form-label">LinkedIn URL</label>
                         <input type="url" id="clubLinkedIn" name="linkedin_url" class="form-control"
-                            value="{{ $club->linkedin_url }}">
+                            value="{{ $club->linkedin_url }}" placeholder="https://linkedin.com/yourclubname">
                     </div>
                 </div>
             </div>
 
             <div class="d-flex justify-content-end">
                 <button type="button" class="btn btn-primary me-2" id="resetContentButton">Reset</button>
-                <button type="submit" class="btn btn-primary" id="saveContentButton">Save</button>
+                <button type="button" class="btn btn-primary" id="saveContentButton">Save</button>
             </div>
         </form>
     </div>
@@ -490,18 +490,70 @@
                 }
             });
 
-            const form = document.getElementById('editWebContentForm');
-            const emailField = document.getElementById('clubEmail');
-
             // Email validation function using regex
             function isValidEmail(email) {
                 const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
                 return emailPattern.test(email);
             }
 
+            function isValidUrl(url) {
+                try {
+                    // First check if URL has protocol with //
+                    if (!url.match(/^https?:\/\//)) {
+                        return false;
+                    }
+
+                    const urlObject = new URL(url);
+                    return urlObject.protocol === 'http:' || urlObject.protocol === 'https:';
+                } catch {
+                    return false;
+                }
+            }
+
             // Save button logic
             saveButton.addEventListener('click', function() {
                 const form = document.getElementById('editWebContentForm');
+                const emailField = document.getElementById(
+                    'clubEmail'); // Add this line to get the email field
+                const email = emailField?.value.trim();
+
+                if (email && !isValidEmail(email)) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Invalid Email',
+                        text: 'Please enter a valid email address.',
+                    });
+                    emailField.focus();
+                    emailField.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center'
+                    });
+                    return; // Prevent form submission
+                }
+
+                const urlFields = {
+                    'clubFacebook': document.getElementById('clubFacebook'),
+                    'clubInstagram': document.getElementById('clubInstagram'),
+                    'clubLinkedIn': document.getElementById('clubLinkedIn')
+                };
+
+                // Add URL validation before form validation
+                for (const [fieldName, field] of Object.entries(urlFields)) {
+                    const url = field?.value.trim();
+                    if (url && !isValidUrl(url)) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Invalid URL',
+                            text: `Please enter a valid URL for ${fieldName.replace('club', '')} (starting with https:// or http://)`,
+                        });
+                        field.focus();
+                        field.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+                        return;
+                    }
+                }
 
                 // Manually trigger form validation
                 if (!form.checkValidity()) {
@@ -524,7 +576,6 @@
 
                 const activities = activitiesContainer.querySelectorAll('.activity-container');
                 const galleryImages = galleryContainer.querySelectorAll('.gallery-image-container');
-                const email = emailField.value.trim();
 
                 // Remove empty activities
                 activities.forEach((activity) => {
@@ -598,7 +649,7 @@
                             if (data.success) {
                                 deletedActivities.length = 0;
                                 deletedGalleryImages.length = 0;
-                                location.reload();
+                                location.reload()
                             }
                         });
                     })

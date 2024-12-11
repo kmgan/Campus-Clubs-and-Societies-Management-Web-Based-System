@@ -39,9 +39,11 @@ class WebsiteController extends Controller
 
         // Filter by category ID
         if ($categoryId && $categoryId !== 'All categories') {
-            $clubsQuery->where('category_id', $categoryId)
-                ->orderBy('name', 'asc');
+            $clubsQuery->where('category_id', $categoryId);
         }
+
+        // Always order by name in ascending order
+        $clubsQuery->orderBy('name', 'asc');
 
         // Group by category_id
         return $clubsQuery->get()->groupBy('category_id');
