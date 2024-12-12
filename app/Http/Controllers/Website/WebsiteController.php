@@ -27,7 +27,6 @@ class WebsiteController extends Controller
         return view('website.home', compact('clubs', 'categories', 'thisMonthEvents', 'futureEvents'));
     }
 
-
     private function getFilteredClubs($keyword, $categoryId)
     {
         $clubsQuery = Club::query();
@@ -42,13 +41,25 @@ class WebsiteController extends Controller
             $clubsQuery->where('category_id', $categoryId);
         }
 
-        // Always order by name in ascending order
+        // Always order clubs by name
         $clubsQuery->orderBy('name', 'asc');
 
-        // Group by category_id
-        return $clubsQuery->get()->groupBy('category_id');
-    }
+        // Group clubs by category_id
+        $clubs = $clubsQuery->get()->groupBy('category_id');
 
+        // Sort categories by name
+        $categories = ClubCategory::orderBy('name', 'asc')->get()->keyBy('id');
+
+        // If a specific category is searched, only include that category
+        if ($categoryId && $categoryId !== 'All categories') {
+            return collect([$categoryId => $clubs->get($categoryId, collect())]);
+        }
+
+        // Reorder clubs based on sorted categories
+        return collect($categories->keys()->mapWithKeys(function ($categoryId) use ($clubs) {
+            return [$categoryId => $clubs->get($categoryId, collect())];
+        }));
+    }
 
     private function getEvents()
     {

@@ -178,7 +178,7 @@
                                                 <h6 class="card-title">
                                                     <a href="{{ route('club.details', ['id' => $club->id]) }}"
                                                         target="_blank">
-                                                        {{ $club->name }}
+                                                        {{ $club->name }} 
                                                     </a>
                                                 </h6>
                                             </div>
