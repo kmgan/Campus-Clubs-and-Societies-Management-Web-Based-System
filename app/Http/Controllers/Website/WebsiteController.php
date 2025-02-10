@@ -44,10 +44,10 @@ class WebsiteController extends Controller
         // Always order clubs by name
         $clubsQuery->orderBy('name', 'asc');
 
-        // Group clubs by category_id
+        // Get filtered clubs grouped by category_id
         $clubs = $clubsQuery->get()->groupBy('category_id');
 
-        // Sort categories by name
+        // Get categories sorted by name
         $categories = ClubCategory::orderBy('name', 'asc')->get()->keyBy('id');
 
         // If a specific category is searched, only include that category
@@ -55,10 +55,15 @@ class WebsiteController extends Controller
             return collect([$categoryId => $clubs->get($categoryId, collect())]);
         }
 
-        // Reorder clubs based on sorted categories
-        return collect($categories->keys()->mapWithKeys(function ($categoryId) use ($clubs) {
-            return [$categoryId => $clubs->get($categoryId, collect())];
-        }));
+        // Only include categories that have clubs after filtering
+        return collect($categories->keys()
+            ->mapWithKeys(function ($categoryId) use ($clubs) {
+                $categoryClubs = $clubs->get($categoryId, collect());
+                // Only include the category if it has clubs
+                return $categoryClubs->isNotEmpty()
+                    ? [$categoryId => $categoryClubs]
+                    : [];
+            }));
     }
 
     private function getEvents()
