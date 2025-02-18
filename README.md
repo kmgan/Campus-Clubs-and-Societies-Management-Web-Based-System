@@ -11,8 +11,12 @@ Ensure you have the following software installed:
 - PHP
 - Composer
 - Visual Studio Code (VSCode)
+- Repository Cloned
 
-Additionally, install any required dependencies for the system.
+Additionally, install any required dependencies for the system using the command:
+```bash
+composer install
+```
 
 ## Step 1: Modify PHP Configuration
 
