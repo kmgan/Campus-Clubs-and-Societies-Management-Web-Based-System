@@ -14,7 +14,7 @@ Ensure you have the following software installed:
 
 Additionally, ensure the repository has been cloned to your local machine:
 ```bash
-git clone https://github.com/yourusername/Campus-Clubs-and-Societies-Management-Web-Based-System.git
+git clone https://github.com/kmgan/Campus-Clubs-and-Societies-Management-Web-Based-System.git
 ```
 
 Lastly, install any required dependencies for the system using the command:
